@@ -1,0 +1,66 @@
+<app-button text="Iniciar sesión / Registrarse" (clicked)="openAuth()" />
+
+@if (open()) {
+  <app-modal
+    [title]="mode() === 'login' ? 'Iniciar sesión' : 'Registrarse'"
+    size="md"
+    (close)="close()"
+  >
+    <app-auth-tabs [mode]="mode()" (switchMode)="switchMode($event)" />
+
+    @if (mode() === 'login') {
+      <form class="space-y-4">
+        <app-input
+          id="login-email"
+          label="Correo"
+          type="email"
+          placeholder="tucorreo@ejemplo.com"
+        />
+        <app-input
+          id="login-password"
+          label="Contraseña"
+          type="password"
+          placeholder="••••••••"
+        />
+        <app-button text="Entrar" />
+      </form>
+    } @else {
+      <form class="space-y-4">
+        <app-input
+          id="register-store"
+          label="ID de la tienda"
+          type="text"
+          placeholder="ID de la tienda"
+        />
+        <app-input
+          id="register-name"
+          label="Nombre"
+          type="text"
+          placeholder="Tu nombre"
+        />
+        <app-input
+          id="register-email"
+          label="Correo"
+          type="email"
+          placeholder="tucorreo@ejemplo.com"
+        />
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <app-input
+            id="register-password"
+            label="Contraseña"
+            type="password"
+            placeholder="••••••••"
+          />
+          <app-input
+            id="register-confirm"
+            label="Confirmar contraseña"
+            type="password"
+            placeholder="••••••••"
+          />
+        </div>
+        
+        <app-button text="Crear cuenta" />
+      </form>
+    }
+  </app-modal>
+}

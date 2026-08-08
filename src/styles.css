@@ -1,3 +1,26 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+
+:root {
+    --primary: #1a7fd4;
+    --primary-foreground: white;
+
+    --secondary: #e8f4fd;
+    --secondary-foreground: #1a5fa0;
+
+    --acent: #d0eaf9;
+
+    --gray: #fff6;
+
+    font-family: "Hanken Grotesk", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+
+}
+
+body {
+    margin: 0;
+    background-color: #f7fafd;
+    color: black;
+}

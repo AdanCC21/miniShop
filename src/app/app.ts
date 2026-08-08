@@ -1,12 +1,12 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+
+import { HeaderComponent } from './header/header';
+import { SidebarComponent } from './sidebar/sidebar';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  imports: [RouterOutlet, HeaderComponent, SidebarComponent],
+  templateUrl: './app.html'
 })
-export class App {
-  protected readonly title = signal('miniShop');
-}
+export class App {}
