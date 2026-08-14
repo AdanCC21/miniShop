@@ -1,0 +1,7 @@
+<app-modal [title]="title()" [size]="size()" (close)="cancel.emit()">
+  <p class="text-sm text-gray-600">{{ message() }}</p>
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" [text]="cancelText()" (clicked)="cancel.emit()" />
+    <app-button [variant]="confirmVariant()" [text]="confirmText()" (clicked)="confirm.emit()" />
+  </div>
+</app-modal>

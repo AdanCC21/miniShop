@@ -1,0 +1,162 @@
+<div class="flex min-h-screen bg-white" animate.enter="ms-fade-in-up">
+  <aside
+    class="hidden w-1/2 flex-col justify-between bg-(--primary) p-12 text-(--primary-foreground) lg:flex"
+  >
+    <span class="text-2xl font-bold tracking-tight">miniShop</span>
+    <div>
+      <h1 class="text-4xl font-bold leading-tight">Gestiona tu tiendita desde un solo lugar.</h1>
+      <p class="mt-4 max-w-md text-sm opacity-80">
+        Crea tu cuenta como encargado o empleado y empieza a registrar ventas, productos y pedidos.
+      </p>
+    </div>
+    <p class="text-xs opacity-60">© 2026 miniShop</p>
+  </aside>
+
+  <main class="flex flex-1 items-center justify-center bg-[#f7fafd] px-4 py-10">
+    <div class="w-full max-w-md">
+      <span class="mb-8 block text-2xl font-bold tracking-tight text-black lg:hidden">miniShop</span>
+
+      <app-auth-tabs [mode]="mode()" (switchMode)="switchMode($event)" />
+
+      @if (mode() === 'login') {
+        <form class="space-y-4">
+          <h2 class="text-lg font-semibold text-black">Bienvenido de nuevo</h2>
+          <app-input
+            id="login-email"
+            label="Correo"
+            type="email"
+            placeholder="tucorreo@ejemplo.com"
+            [value]="loginEmail()"
+            (valueChange)="loginEmail.set($event)"
+          />
+          <app-input
+            id="login-password"
+            label="Contraseña"
+            type="password"
+            placeholder="••••••••"
+            [value]="loginPassword()"
+            (valueChange)="loginPassword.set($event)"
+          />
+          @if (error()) {
+            <p class="text-sm text-red-600">{{ error() }}</p>
+          }
+          <app-button extraClass="w-full" text="Entrar" (clicked)="submitLogin()" />
+        </form>
+      } @else {
+        @if (step() === 1) {
+          <form class="space-y-4">
+            <h2 class="text-lg font-semibold text-black">Crea tu cuenta</h2>
+            <p class="text-sm text-gray-500">Selecciona tu rol para continuar.</p>
+
+            <div class="grid grid-cols-2 gap-1 rounded-lg bg-gray-100 p-1">
+              <button
+                type="button"
+                class="rounded-md px-3 py-2 text-sm font-medium transition cursor-pointer"
+                [class]="role() === 'encargado' ? 'bg-white text-black shadow' : 'text-gray-500 hover:text-black'"
+                (click)="onRoleChange('encargado')"
+              >
+                Encargado
+              </button>
+              <button
+                type="button"
+                class="rounded-md px-3 py-2 text-sm font-medium transition cursor-pointer"
+                [class]="role() === 'empleado' ? 'bg-white text-black shadow' : 'text-gray-500 hover:text-black'"
+                (click)="onRoleChange('empleado')"
+              >
+                Empleado
+              </button>
+            </div>
+
+            <app-input
+              id="register-name"
+              label="Nombre"
+              type="text"
+              placeholder="Tu nombre"
+              [value]="registerName()"
+              (valueChange)="registerName.set($event)"
+            />
+            <app-input
+              id="register-email"
+              label="Correo"
+              type="email"
+              placeholder="tucorreo@ejemplo.com"
+              [value]="registerEmail()"
+              (valueChange)="registerEmail.set($event)"
+            />
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <app-input
+                id="register-password"
+                label="Contraseña"
+                type="password"
+                placeholder="••••••••"
+                [value]="registerPassword()"
+                (valueChange)="registerPassword.set($event)"
+              />
+              <app-input
+                id="register-confirm"
+                label="Confirmar contraseña"
+                type="password"
+                placeholder="••••••••"
+                [value]="registerConfirm()"
+                (valueChange)="registerConfirm.set($event)"
+              />
+            </div>
+
+            @if (role() === 'empleado') {
+              <app-input
+                id="register-store-uid"
+                label="UID de la tienda"
+                type="text"
+                placeholder="UID de la tienda"
+                [value]="storeUid()"
+                (valueChange)="storeUid.set($event)"
+              />
+              @if (error()) {
+                <p class="text-sm text-red-600">{{ error() }}</p>
+              }
+              <app-button extraClass="w-full" text="Crear cuenta" (clicked)="submitRegister()" />
+            } @else {
+              @if (error()) {
+                <p class="text-sm text-red-600">{{ error() }}</p>
+              }
+              <app-button extraClass="w-full" text="Siguiente" (clicked)="nextStep()" />
+            }
+          </form>
+        } @else {
+          <form class="space-y-4">
+            <h2 class="text-lg font-semibold text-black">Datos de la tienda</h2>
+            <p class="text-sm text-gray-500">Ahora completa la información de tu tiendita.</p>
+            <app-input
+              id="register-store-name"
+              label="Nombre de la tienda"
+              type="text"
+              placeholder="Nombre de la tienda"
+              [value]="storeName()"
+              (valueChange)="storeName.set($event)"
+            />
+            <app-input
+              id="register-store-address"
+              label="Dirección de la tienda"
+              type="text"
+              placeholder="Dirección de la tienda"
+              [value]="storeAddress()"
+              (valueChange)="storeAddress.set($event)"
+            />
+            @if (error()) {
+              <p class="text-sm text-red-600">{{ error() }}</p>
+            }
+            <div class="grid grid-cols-2 gap-4">
+              <app-button
+                extraClass="w-full"
+                variant="outline"
+                text="Regresar"
+                (clicked)="prevStep()"
+              />
+              <app-button extraClass="w-full" text="Crear cuenta" (clicked)="submitRegister()" />
+            </div>
+          </form>
+        }
+      }
+    </div>
+  </main>
+</div>

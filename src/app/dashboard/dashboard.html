@@ -1,31 +1,18 @@
-<div class="space-y-6">
+<div class="space-y-6" animate.enter="ms-fade-in-up">
   <div>
-    <h1 class="text-2xl font-bold text-black">Dashboard</h1>
+    <h1 class="text-xl font-bold text-black sm:text-2xl">Dashboard</h1>
     <p class="text-sm text-gray-500">Resumen de ventas del día de hoy</p>
   </div>
 
   <section>
     <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500">Resumen del día</h2>
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      <div class="rounded-lg border border-gray-200 bg-white p-5">
-        <p class="text-sm font-medium text-gray-500">Productos vendidos hoy</p>
-        <p class="mt-2 text-3xl font-bold text-black">{{ summary.productsSold }}</p>
-      </div>
-      <div class="rounded-lg border border-gray-200 bg-white p-5">
-        <p class="text-sm font-medium text-gray-500">Cantidad total vendida</p>
-        <p class="mt-2 text-3xl font-bold text-black">{{ summary.totalQuantity }}</p>
-      </div>
-      <div class="rounded-lg border border-gray-200 bg-white p-5">
-        <p class="text-sm font-medium text-gray-500">Detalles de la última venta</p>
-        <div class="mt-2 flex flex-wrap items-center gap-2">
-          <span class="rounded-md bg-[var(--secondary)] px-2 py-1 text-sm font-medium text-[var(--secondary-foreground)]">
-            {{ summary.lastSale.products }} productos
-          </span>
-          <span class="rounded-md bg-[var(--primary)] px-2 py-1 text-sm font-semibold text-[var(--primary-foreground)]">
-            ${{ summary.lastSale.total }}
-          </span>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (card of summaryCards; track card.label; let i = $index) {
+        <div class="rounded-lg border border-gray-200 bg-white p-5" animate.enter="ms-card-in" [style.--index]="i">
+          <p class="text-sm font-medium text-gray-500">{{ card.label }}</p>
+          <p class="mt-2 text-2xl font-bold text-black sm:text-3xl">{{ card.value }}</p>
         </div>
-      </div>
+      }
     </div>
   </section>
 

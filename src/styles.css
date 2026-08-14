@@ -24,3 +24,85 @@ body {
     background-color: #f7fafd;
     color: black;
 }
+
+@keyframes ms-fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ms-card-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ms-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes ms-fade-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes ms-modal-in {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.ms-fade-in-up {
+    animation: ms-fade-in-up 0.4s ease-out backwards;
+}
+
+.ms-card-in {
+    animation: ms-card-in 0.3s ease-out backwards;
+    animation-delay: calc(var(--index, 0) * 60ms);
+}
+
+.ms-modal-backdrop {
+    animation: ms-fade-in 0.2s ease-out backwards;
+}
+
+.ms-modal-panel {
+    animation: ms-modal-in 0.25s ease-out backwards;
+}
+
+.ms-fade-out {
+    animation: ms-fade-out 0.2s ease-in forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ms-fade-in-up,
+    .ms-card-in,
+    .ms-modal-backdrop,
+    .ms-modal-panel,
+    .ms-fade-out {
+        animation: none;
+    }
+}

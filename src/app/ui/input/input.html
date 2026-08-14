@@ -6,6 +6,8 @@
     [id]="id()"
     [type]="type()"
     [placeholder]="placeholder()"
+    [value]="value()"
+    (input)="onInput($event)"
     class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-[var(--primary)]"
   />
 </div>

@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-input',
@@ -9,4 +9,10 @@ export class InputComponent {
   readonly type = input<string>('text');
   readonly placeholder = input<string>('');
   readonly id = input<string>('');
+  readonly value = input<string | number>('');
+  readonly valueChange = output<string>();
+
+  protected onInput(event: Event): void {
+    this.valueChange.emit((event.target as HTMLInputElement).value);
+  }
 }

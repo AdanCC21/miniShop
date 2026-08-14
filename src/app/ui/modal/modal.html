@@ -1,9 +1,13 @@
 <div
   class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  animate.enter="ms-modal-backdrop"
+  animate.leave="ms-fade-out"
   (mousedown)="onBackdropClick()"
 >
   <div
     class="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl bg-white shadow-xl {{ sizeClass() }}"
+    animate.enter="ms-modal-panel"
+    animate.leave="ms-fade-out"
     (mousedown)="$event.stopPropagation()"
   >
     <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">

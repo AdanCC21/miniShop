@@ -7,14 +7,11 @@ import { Component } from '@angular/core';
   templateUrl: './dashboard.html'
 })
 export class DashboardComponent {
-  protected readonly summary = {
-    productsSold: 42,
-    totalQuantity: 87,
-    lastSale: {
-      products: 3,
-      total: 25.99
-    }
-  };
+  protected readonly summaryCards = [
+    { label: 'Productos vendidos hoy', value: '42' },
+    { label: 'Cantidad total vendida', value: '87' },
+    { label: 'Detalles de la última venta', value: '3 productos · $25.99' }
+  ];
 
   protected readonly sales = [
     { id: '#0001', name: 'Playera Básica', price: 12.5, time: '09:15' },

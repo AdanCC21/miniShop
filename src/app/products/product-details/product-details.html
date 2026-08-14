@@ -1,12 +1,12 @@
 @if (product; as product) {
-  <div class="space-y-6">
+  <div class="space-y-6" animate.enter="ms-fade-in-up">
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-black">{{ product.name }}</h1>
         <p class="text-sm text-gray-500">Código: {{ product.code }}</p>
       </div>
       <div class="flex items-center gap-2">
-        <app-button text="Editar" variant="secondary" />
+        <app-button text="Editar" variant="secondary" (clicked)="openEdit()" />
         <app-button text="Eliminar" variant="outline" />
       </div>
     </div>
@@ -21,13 +21,13 @@
       <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
         <div>
           <p class="text-sm font-medium text-gray-500">Precio</p>
-          <p class="text-2xl font-bold text-[var(--primary)]">${{ product.price }}</p>
+          <p class="text-2xl font-bold text-(--primary)">${{ product.price }}</p>
         </div>
         <div>
           <p class="text-sm font-medium text-gray-500">Categorías</p>
           <div class="mt-2 flex flex-wrap gap-1">
             @for (category of product.categories; track category) {
-              <span class="rounded-md bg-[var(--secondary)] px-2 py-0.5 text-xs font-medium text-[var(--secondary-foreground)]">
+              <span class="rounded-md bg-(--secondary) px-2 py-0.5 text-xs font-medium text-(--secondary-foreground)">
                 {{ category }}
               </span>
             }
@@ -41,7 +41,7 @@
     </div>
   </div>
 } @else {
-  <div class="space-y-4">
+  <div class="space-y-4" animate.enter="ms-fade-in-up">
     <h1 class="text-2xl font-bold text-black">Producto no encontrado</h1>
     <p class="text-sm text-gray-500">El producto que buscas no existe.</p>
     <a
@@ -51,4 +51,31 @@
       Volver a productos
     </a>
   </div>
+}
+
+@if (product && editOpen()) {
+  <app-modal title="Editar producto" size="md" (close)="closeEdit()">
+    <form class="space-y-4">
+      <app-input
+        id="edit-name"
+        label="Nombre"
+        type="text"
+        placeholder="Nombre del producto"
+        [value]="editName()"
+        (valueChange)="onNameChange($event)"
+      />
+      <app-input
+        id="edit-price"
+        label="Precio"
+        type="number"
+        placeholder="0.00"
+        [value]="editPrice()"
+        (valueChange)="onPriceChange($event)"
+      />
+      <div class="flex justify-end gap-3">
+        <app-button variant="outline" text="Cancelar" (clicked)="closeEdit()" />
+        <app-button text="Guardar" (clicked)="saveEdit()" />
+      </div>
+    </form>
+  </app-modal>
 }

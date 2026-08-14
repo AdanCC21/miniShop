@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, HostListener, signal } from '@angular/core';
 
 import { Product } from '../products/product-card/product-card';
 import { PRODUCTS } from '../products/products.data';
@@ -22,6 +22,7 @@ export class CajeroComponent {
   protected readonly quantity = signal(1);
   protected readonly byWeight = signal(false);
   protected readonly cart = signal<CartLine[]>([]);
+  protected readonly regManual = signal(true);
 
   protected readonly matches = computed(() => {
     const query = this.productQuery().trim().toLowerCase();
@@ -33,6 +34,8 @@ export class CajeroComponent {
         product.name.toLowerCase().includes(query) || product.code.toLowerCase().includes(query)
     );
   });
+
+  protected readonly dropdownOpen = signal(false);
 
   protected readonly selectedProduct = signal<Product | null>(null);
 
@@ -47,11 +50,18 @@ export class CajeroComponent {
   protected onQueryChange(event: Event): void {
     this.productQuery.set((event.target as HTMLInputElement).value);
     this.selectedProduct.set(null);
+    this.dropdownOpen.set(true);
   }
 
   protected selectProduct(product: Product): void {
     this.selectedProduct.set(product);
     this.productQuery.set(product.name);
+    this.dropdownOpen.set(false);
+  }
+
+  @HostListener('document:click')
+  protected closeDropdownOnOutsideClick(): void {
+    this.dropdownOpen.set(false);
   }
 
   protected onQuantityChange(event: Event): void {

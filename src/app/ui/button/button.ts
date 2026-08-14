@@ -1,11 +1,12 @@
 import { Component, input, output } from '@angular/core';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline';
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger';
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90',
-  secondary: 'bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90',
-  outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
+  primary: 'bg-(--primary) text-[var(--primary-foreground)] hover:opacity-90',
+  secondary: 'bg-(--secondary) text-[var(--secondary-foreground)] hover:opacity-90',
+  outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-100',
+  danger: 'bg-red-600 text-white hover:bg-red-700'
 };
 
 const disabledClass = 'cursor-not-allowed bg-gray-200 text-gray-400';

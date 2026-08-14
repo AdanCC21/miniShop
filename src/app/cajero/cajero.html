@@ -1,48 +1,45 @@
-<div class="space-y-6">
+<div class="space-y-6" animate.enter="ms-fade-in-up">
   <div>
     <h1 class="text-2xl font-bold text-black">Cajero</h1>
     <p class="text-sm text-gray-500">Registra los productos de la venta actual</p>
   </div>
 
-  <div class="grid gap-6 lg:grid-cols-[1fr_320px]">
+  <div class="grid gap-6 lg:grid-cols-[3fr_1fr]">
+    @if(this.regManual()){
     <section class="rounded-lg border border-gray-200 bg-white p-5">
       <h2 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">Registrar producto</h2>
 
       <div class="space-y-4">
-        <div>
+        <div class="relative" (click)="$event.stopPropagation()">
           <label for="product-query" class="mb-1 block text-sm font-medium text-gray-700">
             Producto (nombre o código)
           </label>
-          <input
-            id="product-query"
-            type="text"
-            [value]="productQuery()"
-            (input)="onQueryChange($event)"
-            placeholder="Escribe o escanea..."
-            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-(--primary)"
-          />
+          <input id="product-query" type="text" [value]="productQuery()" (input)="onQueryChange($event)"
+            (focus)="dropdownOpen.set(true)" placeholder="Escribe o escanea..."
+            class="w-full border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-(--primary)"
+            [class]="dropdownOpen() && productQuery().trim() ? 'rounded-t-lg':'rounded-lg'" />
 
-          @if (productQuery().trim() && matches().length === 0) {
-            <p class="mt-2 text-sm text-gray-500">Sin resultados para "{{ productQuery() }}"</p>
+          @if (dropdownOpen() && productQuery().trim() && matches().length === 0) {
+          <div class="absolute bottom-0 translate-y-full bg-white p-2 size-fit border border-black/20 rounded-b-lg">
+            <p class="text-sm">Sin resultados para "{{ productQuery() }}"</p>
+          </div>
           }
 
-          @if (matches().length > 0) {
-            <ul class="mt-2 max-h-40 overflow-y-auto rounded-lg border border-gray-200">
-              @for (match of matches(); track match.code) {
-                <li>
-                  <button
-                    type="button"
-                    (click)="selectProduct(match)"
-                    class="flex w-full items-center justify-between gap-3 border-b border-gray-100 px-3 py-2 text-left text-sm transition last:border-b-0 hover:bg-(--secondary)"
-                  >
-                    <span class="font-medium text-gray-800">{{ match.name }}</span>
-                    <span class="text-xs text-gray-500">
-                      {{ match.code }} · ${{ formatPrice(match.price) }}
-                    </span>
-                  </button>
-                </li>
-              }
-            </ul>
+          @if (dropdownOpen() && matches().length > 0) {
+          <ul
+            class="absolute bottom-0 translate-y-full w-full bg-white max-h-40 overflow-y-auto rounded-b-lg border border-gray-200">
+            @for (match of matches(); track match.code) {
+            <li>
+              <button type="button" (click)="selectProduct(match)"
+                class="flex w-full items-center justify-between gap-3 border-b border-gray-100 px-3 py-2 text-left text-sm transition last:border-b-0 hover:bg-(--secondary)">
+                <span class="font-medium text-gray-800">{{ match.name }}</span>
+                <span class="text-xs text-gray-500">
+                  {{ match.code }} · ${{ formatPrice(match.price) }}
+                </span>
+              </button>
+            </li>
+            }
+          </ul>
           }
         </div>
 
@@ -50,23 +47,14 @@
           <label for="quantity" class="flex-1 text-sm font-medium text-gray-700">
             Cantidad
             <span class="text-xs font-normal text-gray-400">({{ byWeight() ? 'kg' : 'unidades' }})</span>
-            <input
-              id="quantity"
-              type="number"
-              min="0"
-              [step]="byWeight() ? '0.01' : '1'"
-              [value]="quantity()"
+            <input id="quantity" type="number" min="0" [step]="byWeight() ? '0.01' : '1'" [value]="quantity()"
               (input)="onQuantityChange($event)"
-              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-(--primary)"
-            />
+              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-(--primary)" />
           </label>
 
-          <button
-            type="button"
-            (click)="toggleByWeight()"
+          <button type="button" (click)="toggleByWeight()"
             class="rounded-lg px-4 py-2 text-sm font-medium transition cursor-pointer"
-            [class]="byWeight() ? 'bg-(--primary) text-(--primary-foreground)' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-100'"
-          >
+            [class]="byWeight() ? 'bg-(--primary) text-(--primary-foreground)' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-100'">
             Aplica kg
           </button>
 
@@ -74,6 +62,18 @@
         </div>
       </div>
     </section>
+    }@else {
+    <section class="flex flex-col gap-4 border border-gray-200 bg-white p-5 rounded-lg">
+      <h2 class="text-xl">Registrando productos</h2>
+      <input id="scan-prod" class="bg-white px-4 py-2 border border-gray-200 rounded-lg" placeholder="Codigo" />
+      
+      <div>
+        <span class="text-lg">Producto :</span>
+        <h5>Nombre</h5>
+        <h5>$255</h5>
+      </div>
+    </section>
+    }
 
     <aside class="flex flex-col justify-between rounded-lg border border-gray-200 bg-white p-5">
       <div>
@@ -83,15 +83,15 @@
           <p class="text-sm text-gray-500">Artículos: {{ cart().length }}</p>
         </div>
       </div>
-      
+
       <div class="my-6">
         <p class="text-xs uppercase tracking-wider text-gray-400">Total acumulado</p>
         <p class="mt-1 text-3xl font-bold text-(--primary)">${{ formatPrice(total()) }}</p>
       </div>
-      
+
       <div class="flex gap-2 w-full">
-        <app-button text="Limpiar" (clicked)="clearCart()" variant="outline" extraClass=" w-full " class="w-full"/>
-        <app-button text="Cobrar" (clicked)="clearCart()" variant="primary" extraClass=" w-full " class="w-full"/>
+        <app-button text="Limpiar" (clicked)="clearCart()" variant="outline" extraClass=" w-full " class="w-full" />
+        <app-button text="Cobrar" (clicked)="clearCart()" variant="primary" extraClass=" w-full " class="w-full" />
       </div>
     </aside>
   </div>
@@ -113,30 +113,27 @@
       </thead>
       <tbody>
         @for (line of cart(); track line.code) {
-          <tr class="border-b border-gray-100 transition last:border-b-0 hover:bg-gray-50">
-            <td class="px-4 py-3 font-medium text-[var(--primary)]">{{ line.code }}</td>
-            <td class="px-4 py-3 text-gray-700">{{ line.name }}</td>
-            <td class="px-4 py-3 text-gray-900">${{ formatPrice(line.price) }}</td>
-            <td class="px-4 py-3 text-gray-900">
-              {{ line.quantity }} {{ line.byWeight ? 'kg' : '' }}
-            </td>
-            <td class="px-4 py-3 font-medium text-gray-900">${{ formatPrice(line.price * line.quantity) }}</td>
-            <td class="px-4 py-3 text-right">
-              <button
-                type="button"
-                (click)="removeLine(line.code)"
-                class="rounded-md px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50"
-              >
-                Eliminar
-              </button>
-            </td>
-          </tr>
+        <tr class="border-b border-gray-100 transition last:border-b-0 hover:bg-gray-50">
+          <td class="px-4 py-3 font-medium text-(--primary)">{{ line.code }}</td>
+          <td class="px-4 py-3 text-gray-700">{{ line.name }}</td>
+          <td class="px-4 py-3 text-gray-900">${{ formatPrice(line.price) }}</td>
+          <td class="px-4 py-3 text-gray-900">
+            {{ line.quantity }} {{ line.byWeight ? 'kg' : '' }}
+          </td>
+          <td class="px-4 py-3 font-medium text-gray-900">${{ formatPrice(line.price * line.quantity) }}</td>
+          <td class="px-4 py-3 text-right">
+            <button type="button" (click)="removeLine(line.code)"
+              class="rounded-md px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50">
+              Eliminar
+            </button>
+          </td>
+        </tr>
         } @empty {
-          <tr>
-            <td colspan="6" class="px-4 py-8 text-center text-sm text-gray-500">
-              No hay productos en la venta
-            </td>
-          </tr>
+        <tr>
+          <td colspan="6" class="px-4 py-8 text-center text-sm text-gray-500">
+            No hay productos en la venta
+          </td>
+        </tr>
         }
       </tbody>
     </table>

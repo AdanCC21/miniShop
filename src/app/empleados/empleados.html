@@ -1,0 +1,119 @@
+<div class="space-y-6" animate.enter="ms-fade-in-up">
+  <div>
+    <h1 class="text-2xl font-bold text-black">Empleados</h1>
+    <p class="text-sm text-gray-500">Gestiona el acceso de los empleados a tu tiendita.</p>
+  </div>
+
+  <section>
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500">
+      Solicitudes de acceso
+    </h2>
+
+    @if (pendingRequests().length > 0) {
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        @for (request of pendingRequests(); track request.id; let i = $index) {
+          <div
+            class="rounded-lg border border-gray-200 bg-white p-5"
+            animate.enter="ms-card-in"
+            [style.--index]="i"
+          >
+            <div class="flex items-center gap-3">
+              <span
+                class="flex h-11 w-11 items-center justify-center rounded-lg bg-(--secondary) text-sm font-bold text-(--secondary-foreground)"
+              >
+                {{ initial(request.name) }}
+              </span>
+              <div class="min-w-0">
+                <h3 class="truncate text-sm font-semibold text-black">{{ request.name }}</h3>
+                <p class="truncate text-xs text-gray-500">{{ request.email }}</p>
+              </div>
+            </div>
+            <div class="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
+              <span class="text-xs text-gray-500">Solicitó el {{ formatDate(request.requestedAt) }}</span>
+            </div>
+            <div class="mt-3 flex gap-2">
+              <app-button text="Aceptar" extraClass="flex-1" (clicked)="acceptRequest(request)" />
+              <app-button
+                text="Rechazar"
+                variant="outline"
+                extraClass="flex-1 text-red-600 hover:bg-red-50"
+                (clicked)="rejectRequest(request)"
+              />
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="rounded-lg border border-dashed border-gray-300 bg-white p-12 text-center">
+        <p class="text-sm font-medium text-gray-500">No hay solicitudes de acceso pendientes.</p>
+      </div>
+    }
+  </section>
+
+  <section>
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500">
+      Empleados con acceso
+    </h2>
+
+    @if (employees().length > 0) {
+      <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+              <th class="px-4 py-3 font-semibold">Nombre</th>
+              <th class="px-4 py-3 font-semibold">Correo</th>
+              <th class="px-4 py-3 font-semibold">Rol</th>
+              <th class="px-4 py-3 font-semibold">Fecha de ingreso</th>
+              <th class="px-4 py-3 text-right font-semibold">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (employee of employees(); track employee.id) {
+              <tr class="border-b border-gray-100 last:border-b-0 transition hover:bg-gray-50">
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="flex h-8 w-8 items-center justify-center rounded-full bg-(--secondary) text-xs font-bold text-(--secondary-foreground)"
+                    >
+                      {{ initial(employee.name) }}
+                    </span>
+                    <span class="font-medium text-gray-900">{{ employee.name }}</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-gray-600">{{ employee.email }}</td>
+                <td class="px-4 py-3">
+                  <span
+                    class="rounded-full px-2.5 py-1 text-xs font-medium"
+                    [class]="employee.role === 'Encargado'
+                      ? 'bg-(--secondary) text-(--secondary-foreground)'
+                      : 'bg-gray-100 text-gray-600'"
+                  >
+                    {{ employee.role }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-gray-600">{{ formatDate(employee.joinedAt) }}</td>
+                <td class="px-4 py-3 text-right">
+                  @if (employee.role !== 'Encargado') {
+                    <button
+                      type="button"
+                      class="rounded-md px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50"
+                      (click)="removeEmployee(employee)"
+                    >
+                      Quitar acceso
+                    </button>
+                  } @else {
+                    <span class="text-xs text-gray-400">—</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="rounded-lg border border-dashed border-gray-300 bg-white p-12 text-center">
+        <p class="text-sm font-medium text-gray-500">Aún no hay empleados con acceso.</p>
+      </div>
+    }
+  </section>
+</div>

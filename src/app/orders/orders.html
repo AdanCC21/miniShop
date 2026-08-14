@@ -1,0 +1,330 @@
+<div class="space-y-6">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-black">Pedidos</h1>
+      <p class="text-sm text-gray-500">Pedidos en espera, sin confirmar y finalizados de tus proveedores.</p>
+    </div>
+    <app-button text="Nuevo pedido" (clicked)="openNewOrder()" />
+  </div>
+
+  <div class="grid grid-cols-3 gap-1 rounded-lg bg-gray-100 p-1">
+    @for (item of tabs; track item.id) {
+      <button
+        type="button"
+        class="rounded-md px-3 py-2 text-sm font-medium transition cursor-pointer"
+        [class]="tab() === item.id ? 'bg-white text-black shadow' : 'text-gray-500 hover:text-black'"
+        (click)="selectTab(item.id)"
+      >
+        {{ item.label }}
+      </button>
+    }
+  </div>
+
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-wrap items-center gap-2">
+      @for (filter of dateFilters; track filter.id) {
+        <button
+          type="button"
+          class="rounded-lg px-3 py-1.5 text-sm font-medium transition cursor-pointer"
+          [class]="dateFilter() === filter.id
+            ? 'bg-(--primary) text-(--primary-foreground)'
+            : 'border border-gray-300 bg-white text-gray-600 hover:bg-gray-100'"
+          (click)="selectDateFilter(filter.id)"
+        >
+          {{ filter.label }}
+        </button>
+      }
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <app-select
+        label="Proveedor"
+        [value]="supplierFilter()"
+        [options]="supplierOptions()"
+        (valueChange)="onSupplierFilterChange($event)"
+      />
+      <app-select
+        label="Ordenar"
+        [value]="sortBy()"
+        [options]="sortOptions"
+        (valueChange)="onSortChange($event)"
+      />
+    </div>
+  </div>
+
+  @if (visibleOrders().length > 0) {
+    <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (order of visibleOrders(); track order.id; let i = $index) {
+        <button
+          type="button"
+          (click)="openDetails(order)"
+          animate.enter="ms-card-in"
+          [style.--index]="i"
+          class="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white p-5 text-left transition hover:shadow-md"
+        >
+          <div class="flex items-center gap-3">
+            <span
+              class="flex h-11 w-11 items-center justify-center rounded-lg text-sm font-bold text-white"
+              [style.background]="order.companyColor"
+            >
+              {{ companyInitial(order) }}
+            </span>
+            <div>
+              <h3 class="text-sm font-semibold text-black">{{ order.company }}</h3>
+              <p class="text-xs text-gray-500">{{ totalProducts(order) }} productos</p>
+            </div>
+          </div>
+          <div class="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 text-xs">
+            <span class="text-gray-500">Registrado el {{ formatDate(order.createdDate) }}</span>
+          </div>
+        </button>
+      }
+    </section>
+  } @else {
+    <div class="rounded-lg border border-dashed border-gray-300 bg-white p-12 text-center">
+      <p class="text-sm font-medium text-gray-500">{{ emptyMessage() }}</p>
+    </div>
+  }
+</div>
+
+@if (selectedOrder(); as order) {
+  <app-modal title="Detalles del pedido" size="lg" (close)="closeDetails()">
+    <div class="space-y-4">
+      <div class="flex items-center gap-3">
+        <span
+          class="flex h-12 w-12 items-center justify-center rounded-lg text-base font-bold text-white"
+          [style.background]="order.companyColor"
+        >
+          {{ companyInitial(order) }}
+        </span>
+        <div>
+          <h3 class="text-base font-semibold text-black">{{ order.company }}</h3>
+          <p class="text-sm text-gray-500">Proveedor</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div>
+          <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Fecha creada</p>
+          <p class="text-sm font-medium text-gray-900">{{ formatDate(order.createdDate) }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Entrega esperada</p>
+          <p class="text-sm font-medium text-gray-900">{{ formatDate(order.expectedDate) }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Total de productos</p>
+          <p class="text-sm font-medium text-gray-900">{{ totalProducts(order) }}</p>
+        </div>
+      </div>
+
+      <div class="overflow-hidden rounded-lg border border-gray-200">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+              <th class="px-4 py-3 font-semibold">Producto</th>
+              <th class="px-4 py-3 font-semibold">Cantidad</th>
+              <th class="px-4 py-3 font-semibold">Precio</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (product of order.products; track product.name) {
+              <tr class="border-b border-gray-100 last:border-b-0 transition hover:bg-gray-50">
+                <td class="px-4 py-3 text-gray-700">{{ product.name }}</td>
+                <td class="px-4 py-3 text-gray-700">{{ product.quantity }}</td>
+                <td class="px-4 py-3 font-medium text-gray-900">${{ product.price }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (order.status !== 'finalizado') {
+        <div class="flex justify-end border-t border-gray-200 pt-4">
+          <app-button text="Marcar como finalizado" (clicked)="markAsFinalized(order)" />
+        </div>
+      }
+    </div>
+  </app-modal>
+}
+
+@if (newOrderOpen()) {
+  <app-modal title="Nuevo pedido" size="wide" (close)="closeNewOrder()">
+<div class="space-y-6" animate.enter="ms-fade-in-up">
+      <div class="relative">
+        <app-input
+          id="new-order-provider"
+          label="Proveedor"
+          type="text"
+          placeholder="Escribe el nombre del proveedor..."
+          [value]="providerQuery()"
+          (valueChange)="onProviderChange($event)"
+        />
+        @if (suggestions().length > 0 && !matchedSupplier()) {
+          <div class="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+            @for (supplier of suggestions(); track supplier.name) {
+              <button
+                type="button"
+                (click)="selectSupplier(supplier)"
+                class="flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-50"
+              >
+                <span
+                  class="flex h-7 w-7 items-center justify-center rounded-md text-xs font-bold text-white"
+                  [style.background]="supplier.color"
+                >
+                  {{ supplier.name.charAt(0) }}
+                </span>
+                {{ supplier.name }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <app-input
+        id="new-order-expected"
+        label="Fecha de entrega esperada"
+        type="date"
+        [value]="expectedDate()"
+        (valueChange)="onExpectedDateChange($event)"
+      />
+
+      @if (matchedSupplier(); as supplier) {
+        <div class="space-y-3">
+          <div class="flex flex-wrap items-end gap-3">
+            <div class="min-w-0 flex-1">
+              <app-input
+                id="catalog-search"
+                label="Buscar artículo"
+                type="text"
+                placeholder="Busca un producto..."
+                [value]="productQuery()"
+                (valueChange)="onProductQueryChange($event)"
+              />
+            </div>
+            <div class="w-32">
+              <app-input
+                id="catalog-qty"
+                label="Cantidad"
+                type="number"
+                placeholder="1"
+                [value]="addQty()"
+                (valueChange)="onAddQtyChange($event)"
+              />
+            </div>
+          </div>
+
+          <div class="overflow-hidden rounded-lg border border-gray-200">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+                  <th class="px-4 py-3 font-semibold">Producto</th>
+                  <th class="px-4 py-3 font-semibold">Precio</th>
+                  <th class="px-4 py-3 text-right font-semibold">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (product of visibleCatalogProducts(); track product.name) {
+                  <tr class="border-b border-gray-100 last:border-b-0 transition hover:bg-gray-50">
+                    <td class="px-4 py-3 text-gray-700">{{ product.name }}</td>
+                    <td class="px-4 py-3 font-medium text-gray-900">${{ product.price }}</td>
+                    <td class="px-4 py-3 text-right">
+                      <app-button text="Agregar" variant="secondary" (clicked)="addFromCatalog(product)" />
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-400">
+                      Sin resultados
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      @if (providerNotFound()) {
+        <div class="rounded-lg border border-dashed border-gray-300 p-4">
+          <p class="text-sm font-medium text-gray-700">Proveedor no encontrado</p>
+          <p class="text-xs text-gray-500">
+            Escribe manualmente los productos que quieres pedir de {{ providerQuery().trim() }}.
+          </p>
+          <div class="mt-3 flex flex-wrap items-end gap-3">
+            <div class="min-w-0 flex-1">
+              <app-input
+                id="manual-name"
+                label="Producto"
+                type="text"
+                placeholder="Nombre del producto"
+                [value]="manualName()"
+                (valueChange)="onManualNameChange($event)"
+              />
+            </div>
+            <div class="w-32">
+              <app-input
+                id="manual-qty"
+                label="Cantidad"
+                type="number"
+                placeholder="1"
+                [value]="manualQty()"
+                (valueChange)="onManualQtyChange($event)"
+              />
+            </div>
+            <app-button text="Agregar" (clicked)="addManual()" />
+          </div>
+        </div>
+      }
+
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-black">
+            Productos a pedir ({{ cart().length }})
+          </h3>
+          <span class="text-sm font-semibold text-(--primary)">Total: ${{ cartTotal() }}</span>
+        </div>
+
+        @if (cart().length > 0) {
+          <div class="overflow-hidden rounded-lg border border-gray-200">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+                  <th class="px-4 py-3 font-semibold">Producto</th>
+                  <th class="px-4 py-3 font-semibold">Cantidad</th>
+                  <th class="px-4 py-3 font-semibold">Precio</th>
+                  <th class="px-4 py-3 text-right font-semibold">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of cart(); track $index) {
+                  <tr class="border-b border-gray-100 last:border-b-0 transition hover:bg-gray-50">
+                    <td class="px-4 py-3 text-gray-700">{{ item.name }}</td>
+                    <td class="px-4 py-3 text-gray-700">{{ item.quantity }}</td>
+                    <td class="px-4 py-3 font-medium text-gray-900">${{ item.price }}</td>
+                    <td class="px-4 py-3 text-right">
+                      <button
+                        type="button"
+                        class="rounded-md px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50"
+                        (click)="removeCartItem($index)"
+                      >
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="text-sm text-gray-400">Aún no has agregado productos.</p>
+        }
+      </div>
+
+      <div class="flex justify-end gap-3 border-t border-gray-200 pt-4">
+        <app-button variant="outline" text="Cancelar" (clicked)="closeNewOrder()" />
+        <app-button text="Crear pedido" (clicked)="createOrder()" />
+      </div>
+    </div>
+  </app-modal>
+}

@@ -1,0 +1,140 @@
+@if (open()) {
+  <div
+    class="fixed inset-0 z-20 bg-black/50 md:hidden"
+    animate.enter="ms-modal-backdrop"
+    animate.leave="ms-fade-out"
+    (click)="close.emit()"
+  ></div>
+}
+
+<aside
+  class="fixed inset-y-0 left-0 z-30 flex w-44 transform flex-col overflow-y-auto border-r border-gray-200 bg-white py-4 transition-transform duration-300 md:w-(--sidebar-width) md:translate-x-0"
+  [class.-translate-x-full]="!open()"
+>
+  <div
+    class="absolute inset-y-0 right-0 z-10 hidden w-1.5 cursor-col-resize touch-none transition-colors hover:bg-(--primary) md:block"
+    role="separator"
+    aria-orientation="vertical"
+    aria-label="Redimensionar menú"
+    (pointerdown)="startResize($event)"
+  ></div>
+  <div class="mb-6 flex items-center justify-between px-4">
+    <span class="text-xl font-bold tracking-tight text-black">miniShop </span>
+    <button
+      type="button"
+      aria-label="Cerrar menú"
+      class="rounded-md p-1.5 text-gray-500 transition hover:bg-gray-100 hover:text-black md:hidden"
+      (click)="close.emit()"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+  <nav class="flex flex-1 flex-col gap-1 px-3">
+    @if (isStoreMember()) {
+      <span class="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-400">Menú</span>
+      <a routerLink="/dashboard" routerLinkActive="bg-gray-100 text-black"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-black">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10" />
+        </svg>
+        Inicio
+      </a>
+
+      <a routerLink="/cajero" routerLinkActive="bg-gray-100 text-black"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-black">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 6v6m0 0l-3-3m3 3l3-3M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        Cajero
+      </a>
+
+      <a routerLink="/pedidos" routerLinkActive="bg-gray-100 text-black"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-black">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        </svg>
+        Pedidos
+      </a>
+
+      <a routerLink="/products" routerLinkActive="bg-gray-100 text-black"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-black">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+        </svg>
+        Productos
+      </a>
+    }
+
+    @if (isEncargado()) {
+      <span class="mt-6 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-400">Tiendita</span>
+
+      <a routerLink="/tiendita" routerLinkActive="bg-gray-100 text-black"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-black">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M3 6l1.5-3h15L21 6M4 6v13a2 2 0 002 2h12a2 2 0 002-2V6M3 6h18M5 10h2v4H5zm4 0h2v4H9zm4 0h2v4h-2zm4 0h2v4h-2z" />
+        </svg>
+        Tiendita
+      </a>
+
+      <a routerLink="/empleados" routerLinkActive="bg-gray-100 text-black"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-black">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6 0a4 4 0 10-4-4 4 4 0 004 4z" />
+        </svg>
+        Empleados
+      </a>
+    }
+
+    @if (isAdmin()) {
+      <span class="mt-6 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-400">Sistema</span>
+
+      <a routerLink="/admin" routerLinkActive="bg-gray-100 text-black"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-black">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M5 3h14a2 2 0 012 2v3.5a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm-2 8.5V19a2 2 0 002 2h14a2 2 0 002-2v-7.5M9 7h6" />
+        </svg>
+        Administrador
+      </a>
+    }
+  </nav>
+
+  @if (user(); as user) {
+    <div class="mt-6 border-t border-gray-200 px-4 pt-4">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-200">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="truncate text-sm font-semibold text-black">{{ user.name }}</p>
+          <p class="truncate text-xs capitalize text-gray-500">{{ user.role }}</p>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="mt-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+        (click)="logout()"
+      >
+        Cerrar sesión
+      </button>
+    </div>
+  }
+</aside>

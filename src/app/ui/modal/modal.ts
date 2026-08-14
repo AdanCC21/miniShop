@@ -1,6 +1,6 @@
 import { Component, input, output } from '@angular/core';
 
-export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'wide';
 
 const sizeClasses: Record<ModalSize, string> = {
   sm: 'max-w-sm',
@@ -9,7 +9,8 @@ const sizeClasses: Record<ModalSize, string> = {
   xl: 'max-w-xl',
   '2xl': 'max-w-2xl',
   '3xl': 'max-w-3xl',
-  '4xl': 'max-w-4xl'
+  '4xl': 'max-w-4xl',
+  wide: 'max-w-[90vw]'
 };
 
 @Component({
