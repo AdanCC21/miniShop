@@ -1,8 +1,9 @@
-import { Component, computed, HostListener, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 
 import { Product } from '../products/product-card/product-card';
 import { PRODUCTS } from '../products/products.data';
 import { ButtonComponent } from '../ui/button/button';
+import { SearchSuggestionsComponent } from '../ui/search-suggestions/search-suggestions';
 
 export interface CartLine {
   code: string;
@@ -14,7 +15,7 @@ export interface CartLine {
 
 @Component({
   selector: 'app-cajero',
-  imports: [ButtonComponent],
+  imports: [ButtonComponent, SearchSuggestionsComponent],
   templateUrl: './cajero.html'
 })
 export class CajeroComponent {
@@ -35,7 +36,9 @@ export class CajeroComponent {
     );
   });
 
-  protected readonly dropdownOpen = signal(false);
+  protected readonly productEmptyMessage = computed(
+    () => `Sin resultados para "${this.productQuery()}"`
+  );
 
   protected readonly selectedProduct = signal<Product | null>(null);
 
@@ -47,21 +50,14 @@ export class CajeroComponent {
     this.cart().reduce((sum, line) => sum + line.price * line.quantity, 0)
   );
 
-  protected onQueryChange(event: Event): void {
-    this.productQuery.set((event.target as HTMLInputElement).value);
+  protected onQueryChange(value: string): void {
+    this.productQuery.set(value);
     this.selectedProduct.set(null);
-    this.dropdownOpen.set(true);
   }
 
   protected selectProduct(product: Product): void {
     this.selectedProduct.set(product);
     this.productQuery.set(product.name);
-    this.dropdownOpen.set(false);
-  }
-
-  @HostListener('document:click')
-  protected closeDropdownOnOutsideClick(): void {
-    this.dropdownOpen.set(false);
   }
 
   protected onQuantityChange(event: Event): void {

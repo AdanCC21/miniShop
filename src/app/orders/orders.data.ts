@@ -2,9 +2,17 @@ export interface OrderProduct {
   name: string;
   quantity: number;
   price: number;
+  unit?: 'unidad' | 'kg';
+  received?: number;
 }
 
 export type OrderStatus = 'pendiente' | 'finalizado';
+
+export type RecurrenceType = 'diario' | 'semanal' | 'quincenal' | 'mensual';
+
+export interface Recurrence {
+  type: RecurrenceType;
+}
 
 export interface Order {
   id: string;
@@ -14,6 +22,7 @@ export interface Order {
   createdDate: string;
   expectedDate: string;
   status: OrderStatus;
+  recurrence?: Recurrence;
 }
 
 export const ORDERS: Order[] = [
@@ -124,6 +133,32 @@ export const ORDERS: Order[] = [
     createdDate: '2026-08-01',
     expectedDate: '2026-08-08',
     status: 'finalizado'
+  },
+  {
+    id: 'ORD-009',
+    company: 'Bimbo',
+    companyColor: '#c8102e',
+    products: [
+      { name: 'Pan Blanco Bimbo Grande', quantity: 20, price: 45.0 },
+      { name: 'Medias Noches Bimbo', quantity: 15, price: 55.0 }
+    ],
+    createdDate: '2026-08-05',
+    expectedDate: '2026-08-11',
+    status: 'pendiente',
+    recurrence: { type: 'semanal' }
+  },
+  {
+    id: 'ORD-010',
+    company: 'Coca-Cola',
+    companyColor: '#d02128',
+    products: [
+      { name: 'Coca-Cola 600ml', quantity: 24, price: 14.0 },
+      { name: 'Sprite 600ml', quantity: 12, price: 14.0 }
+    ],
+    createdDate: '2026-08-01',
+    expectedDate: '2026-09-15',
+    status: 'pendiente',
+    recurrence: { type: 'mensual' }
   }
 ];
 

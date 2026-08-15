@@ -124,10 +124,10 @@ Los ítems marcados con ❓ son ambiguos en la versión original y deben resolve
   - Ambos
 - [ ] ¿Se actualiza el almacén automáticamente al recibir un pedido?
 - [ ] ¿Qué información exacta lleva el cierre de caja?
-- [ ] ¿El cajero puede ver el resumen mensual, o solo el diario?
-- [ ] ¿El cajero puede crear pedidos o solo consultarlos/recibirlos?
-- [ ] ¿El plazo de eliminación de un pedido "No confirmada" se cuenta desde su creación o desde que cambió de estado?
-- [ ] ¿Se requiere soporte offline?
+- [x] ¿El cajero puede ver el resumen mensual, o solo el diario?
+  - mensual
+- [x] ¿El cajero puede crear pedidos o solo consultarlos/recibirlos?
+  - consultarlos y recibirlos
 
 ## Usuarios de prueba
 Encargado: carlos.ruiz@ejemplo.com / encargado123

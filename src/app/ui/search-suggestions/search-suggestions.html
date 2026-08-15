@@ -1,0 +1,43 @@
+<div class="relative" (click)="$event.stopPropagation()">
+  @if (label()) {
+    <label class="mb-1 block text-sm font-medium text-gray-700">{{ label() }}</label>
+  }
+  <input
+    type="text"
+    [value]="query()"
+    [placeholder]="placeholder()"
+    (input)="onInput($event)"
+    (focus)="onFocus()"
+    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-(--primary)"
+    [class]="open() && items().length > 0 ? 'rounded-b-none' : 'rounded-lg'"
+  />
+
+  @if (open() && query().trim() && items().length > 0) {
+    <ul
+      class="absolute left-0 right-0 top-full z-50 max-h-48 overflow-y-auto rounded-b-lg border border-gray-200 bg-white shadow-lg"
+    >
+      @for (item of items(); track $index) {
+        <li>
+          <button
+            type="button"
+            (click)="select(item)"
+            class="flex w-full items-center gap-3 border-b border-gray-100 px-3 py-2 text-left text-sm transition last:border-b-0 hover:bg-gray-50"
+          >
+            <ng-container
+              [ngTemplateOutlet]="itemTemplate()"
+              [ngTemplateOutletContext]="{ $implicit: item }"
+            />
+          </button>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (open() && query().trim() && items().length === 0 && emptyMessage()) {
+    <div
+      class="absolute left-0 right-0 top-full z-50 rounded-b-lg border border-gray-200 bg-white px-3 py-2 shadow-lg"
+    >
+      <p class="text-sm text-gray-500">{{ emptyMessage() }}</p>
+    </div>
+  }
+</div>

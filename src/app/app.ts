@@ -4,10 +4,11 @@ import { filter } from 'rxjs';
 
 import { HeaderComponent } from './ui/header/header';
 import { SidebarComponent } from './ui/sidebar/sidebar';
+import { ToastComponent } from './ui/toast/toast';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, HeaderComponent, SidebarComponent],
+  imports: [RouterOutlet, HeaderComponent, SidebarComponent, ToastComponent],
   templateUrl: './app.html'
 })
 export class App {

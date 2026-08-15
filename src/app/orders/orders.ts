@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 
 import {
   findSupplierByName,
@@ -6,14 +6,18 @@ import {
   Order,
   OrderProduct,
   ORDERS,
+  RecurrenceType,
   Supplier,
   SupplierProduct,
   SUPPLIERS
 } from './orders.data';
+import { dayOfMonth, nextOccurrence, recurrenceLabel as getRecurrenceLabel, weekdayName } from './recurrence';
 import { ModalComponent } from '../ui/modal/modal';
 import { ButtonComponent } from '../ui/button/button';
 import { InputComponent } from '../ui/input/input';
+import { SearchSuggestionsComponent } from '../ui/search-suggestions/search-suggestions';
 import { SelectComponent, SelectOption } from '../ui/select/select';
+import { ToastService } from '../ui/toast/toast.service';
 
 export type OrdersTab = 'waiting' | 'unconfirmed' | 'finalized';
 export type DateFilter = 'todos' | 'hoy' | 'semana';
@@ -21,10 +25,11 @@ export type OrderSort = 'fecha' | 'proveedor' | 'total';
 
 @Component({
   selector: 'app-orders',
-  imports: [ButtonComponent, InputComponent, ModalComponent, SelectComponent],
+  imports: [ButtonComponent, InputComponent, ModalComponent, SearchSuggestionsComponent, SelectComponent],
   templateUrl: './orders.html'
 })
 export class OrdersComponent {
+  protected readonly toast = inject(ToastService);
   protected readonly orders = signal<Order[]>(ORDERS);
   protected readonly tab = signal<OrdersTab>('waiting');
   protected readonly selectedOrder = signal<Order | null>(null);
@@ -57,24 +62,46 @@ export class OrdersComponent {
   protected readonly addQty = signal(1);
   protected readonly manualName = signal('');
   protected readonly manualQty = signal(1);
+  protected readonly manualUnit = signal<'unidad' | 'kg'>('unidad');
+  protected readonly manualPrice = signal(0);
   protected readonly expectedDate = signal(this.defaultExpectedDate());
+  protected readonly recurrence = signal<RecurrenceType | null>(null);
   protected readonly cart = signal<OrderProduct[]>([]);
+  protected readonly editingOrderId = signal<string | null>(null);
+  protected readonly receivedOrder = signal<Order | null>(null);
+  protected readonly receivedProducts = signal<OrderProduct[]>([]);
+
+  getWeekDay(): string {
+    return weekdayName(this.expectedDate());
+  }
+
+  getDaySelected(): string {
+    return String(dayOfMonth(this.expectedDate()));
+  }
 
   protected readonly waitingOrders = computed(() =>
     this.orders().filter(
-      (order) => order.status !== 'finalizado' && order.expectedDate >= this.todayISO()
+      (order) =>
+        !order.recurrence && order.status !== 'finalizado' && order.expectedDate >= this.todayISO()
     )
   );
 
   protected readonly unconfirmedOrders = computed(() =>
     this.orders().filter(
-      (order) => order.status !== 'finalizado' && order.expectedDate < this.todayISO()
+      (order) => !order.recurrence && order.status !== 'finalizado' && order.expectedDate < this.todayISO()
     )
   );
 
   protected readonly finalizedOrders = computed(() =>
-    this.orders().filter((order) => order.status === 'finalizado')
+    this.orders().filter((order) => !order.recurrence && order.status === 'finalizado')
   );
+
+  protected readonly scheduledOrders = computed(() => {
+    const today = this.todayISO();
+    return this.orders()
+      .filter((order) => order.recurrence && order.status !== 'finalizado')
+      .map((order) => ({ ...order, expectedDate: this.nextDeliveryDate(order, today) }));
+  });
 
   protected readonly visibleOrders = computed(() => {
     let base: Order[];
@@ -144,6 +171,10 @@ export class OrdersComponent {
     this.cart().reduce((sum, item) => sum + item.price * item.quantity, 0)
   );
 
+  protected lineTotal(item: OrderProduct): number {
+    return item.price * item.quantity;
+  }
+
   protected selectTab(tab: OrdersTab): void {
     this.tab.set(tab);
     this.resetFilters();
@@ -209,8 +240,94 @@ export class OrdersComponent {
     this.closeDetails();
   }
 
+  protected registerDelivery(order: Order): void {
+    const today = this.todayISO();
+    const current = this.nextDeliveryDate(order, today);
+    const next = nextOccurrence(current, order.recurrence!.type);
+    this.orders.update((list) =>
+      list.map((item) =>
+        item.id === order.id
+          ? {
+              ...item,
+              expectedDate: next,
+              products: item.products.map(({ received: _received, ...rest }) => rest)
+            }
+          : item
+      )
+    );
+    this.closeDetails();
+    this.toast.success('Entrega registrada', `Próxima entrega: ${formatDate(next)}`);
+  }
+
+  protected cancelScheduled(order: Order): void {
+    this.orders.update((list) => list.filter((item) => item.id !== order.id));
+    this.closeDetails();
+    this.toast.warning('Programación cancelada', `${order.company} ya no se repetirá.`);
+  }
+
+  protected editScheduled(order: Order): void {
+    this.editingOrderId.set(order.id);
+    this.providerQuery.set(order.company);
+    this.productQuery.set('');
+    this.addQty.set(1);
+    this.manualName.set('');
+    this.manualQty.set(1);
+    this.manualUnit.set('unidad');
+    this.manualPrice.set(0);
+    this.expectedDate.set(order.expectedDate);
+    this.recurrence.set(order.recurrence?.type ?? null);
+    this.cart.set(order.products.map((product) => ({ ...product })));
+    this.closeDetails();
+    this.newOrderOpen.set(true);
+  }
+
+  protected openReceived(order: Order): void {
+    this.receivedProducts.set(
+      order.products.map((product) => ({
+        ...product,
+        received: product.received ?? product.quantity
+      }))
+    );
+    this.receivedOrder.set(order);
+  }
+
+  protected closeReceived(): void {
+    this.receivedOrder.set(null);
+    this.receivedProducts.set([]);
+  }
+
+  protected onReceivedChange(index: number, event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    const amount = value === '' ? 0 : Number(value);
+    this.receivedProducts.update((items) =>
+      items.map((item, i) => (i === index ? { ...item, received: amount } : item))
+    );
+  }
+
+  protected saveReceived(): void {
+    const order = this.receivedOrder();
+    if (!order) {
+      return;
+    }
+    const products = this.receivedProducts();
+    this.orders.update((list) =>
+      list.map((item) => (item.id === order.id ? { ...item, products } : item))
+    );
+    this.selectedOrder.update((current) =>
+      current && current.id === order.id ? { ...current, products } : current
+    );
+    this.closeReceived();
+    this.toast.success('Recibido registrado', 'Las cantidades recibidas se actualizaron.');
+  }
+
+  protected selectRecurrence(type: RecurrenceType | null): void {
+    this.recurrence.set(this.recurrence() === type ? null : type);
+  }
+
   protected openNewOrder(): void {
+    this.editingOrderId.set(null);
     this.expectedDate.set(this.defaultExpectedDate());
+    this.recurrence.set(null);
     this.newOrderOpen.set(true);
   }
 
@@ -245,17 +362,50 @@ export class OrdersComponent {
     this.manualQty.set(value === '' ? 0 : Number(value));
   }
 
+  protected onManualUnitChange(unit: 'unidad' | 'kg'): void {
+    this.manualUnit.set(unit);
+  }
+
+  protected onManualPriceChange(value: string): void {
+    this.manualPrice.set(value === '' ? 0 : Number(value));
+  }
+
   protected onExpectedDateChange(value: string): void {
     this.expectedDate.set(value);
   }
 
-  protected addFromCatalog(product: SupplierProduct): void {
-    const quantity = this.addQty();
-    if (quantity <= 0) {
+  protected addFromCatalog(product: SupplierProduct, amount?: number): void {
+    if (typeof amount === 'number' && amount <= 0) {
+      console.log(amount);
+      this.toast.error("Cantidad incorrecta", "La cantidad del producto no puede ser 0 o negativa")
       return;
     }
-    this.cart.update((items) => [...items, { name: product.name, quantity, price: product.price }]);
+    const quantity = this.addQty();
+    if (quantity <= 0) {
+      this.toast.error("Cantidad incorrecta", "La cantidad del producto no puede ser 0 o negativa")
+      return;
+    }
+    this.cart.update((items) => [...items, { name: product.name, quantity: amount ?? quantity, price: product.price }]);
+    this.toast.success("Exito", `${product.name} agregado correctamente`);
+
     this.addQty.set(1);
+  }
+
+  protected addManualWithCatalog(productName: string, amount: number = 1) {
+    const product = this.visibleCatalogProducts().find(pr => pr.name === productName) || null;
+    if (amount <= 0) {
+      this.toast.error("Cantidad incorrecta", "La cantidad del producto no puede ser 0 o negativa")
+      return
+    };
+    if (!product) {
+      this.toast.error("Cantidad incorrecta", "El producto es invalido");
+      return
+    };
+    this.cart.update((items) => [...items, { name: product.name, quantity: amount, price: product.price }]);
+    this.toast.success("Exito", `${product.name} agregado correctamente`);
+
+    this.addQty.set(1);
+    this.productQuery.set("");
   }
 
   protected addManual(): void {
@@ -264,9 +414,14 @@ export class OrdersComponent {
     if (!name || quantity <= 0) {
       return;
     }
-    this.cart.update((items) => [...items, { name, quantity, price: 0 }]);
+    this.cart.update((items) => [
+      ...items,
+      { name, quantity, price: this.manualPrice(), unit: this.manualUnit() }
+    ]);
     this.manualName.set('');
     this.manualQty.set(1);
+    this.manualUnit.set('unidad');
+    this.manualPrice.set(0);
   }
 
   protected removeCartItem(index: number): void {
@@ -279,6 +434,28 @@ export class OrdersComponent {
       return;
     }
     const supplier = findSupplierByName(provider);
+    const recurrence = this.recurrence();
+    const editingId = this.editingOrderId();
+
+    if (editingId) {
+      this.orders.update((list) =>
+        list.map((order) =>
+          order.id === editingId
+            ? {
+                ...order,
+                company: provider,
+                companyColor: supplier?.color ?? '#6b7280',
+                products: this.cart(),
+                expectedDate: this.expectedDate(),
+                recurrence: recurrence ? { type: recurrence } : undefined
+              }
+            : order
+        )
+      );
+      this.closeNewOrder();
+      this.toast.success('Pedido actualizado', 'Cambios guardados correctamente.');
+      return;
+    }
 
     const order: Order = {
       id: `ORD-${String(this.orders().length + 1).padStart(3, '0')}`,
@@ -287,10 +464,15 @@ export class OrdersComponent {
       products: this.cart(),
       createdDate: this.todayISO(),
       expectedDate: this.expectedDate(),
-      status: 'pendiente'
+      status: 'pendiente',
+      recurrence: recurrence ? { type: recurrence } : undefined
     };
     this.orders.update((list) => [...list, order]);
     this.closeNewOrder();
+    this.toast.success(
+      'Pedido creado',
+      recurrence ? `Se repetirá ${getRecurrenceLabel(recurrence, order.expectedDate).toLowerCase()}.` : 'Pedido registrado.'
+    );
   }
 
   private resetNewOrder(): void {
@@ -299,7 +481,11 @@ export class OrdersComponent {
     this.addQty.set(1);
     this.manualName.set('');
     this.manualQty.set(1);
+    this.manualUnit.set('unidad');
+    this.manualPrice.set(0);
     this.expectedDate.set(this.defaultExpectedDate());
+    this.recurrence.set(null);
+    this.editingOrderId.set(null);
     this.cart.set([]);
   }
 
@@ -319,6 +505,15 @@ export class OrdersComponent {
     return this.toISODate(date);
   }
 
+  private nextDeliveryDate(order: Order, today: string): string {
+    let date = order.expectedDate;
+    const type = order.recurrence!.type;
+    while (date < today) {
+      date = nextOccurrence(date, type);
+    }
+    return date;
+  }
+
   private toISODate(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -332,6 +527,30 @@ export class OrdersComponent {
 
   protected totalProducts(order: Order): number {
     return order.products.reduce((sum, product) => sum + product.quantity, 0);
+  }
+
+  protected orderTotal(order: Order): number {
+    return order.products.reduce((sum, product) => sum + product.price * product.quantity, 0);
+  }
+
+  protected formatPrice(value: number): string {
+    return value.toFixed(2);
+  }
+
+  protected recurrenceLabel(type: RecurrenceType, date: string): string {
+    return getRecurrenceLabel(type, date);
+  }
+
+  protected unitSuffix(unit: 'unidad' | 'kg' | undefined): string {
+    return unit === 'kg' ? 'kg' : 'uds';
+  }
+
+  protected priceSuffix(unit: 'unidad' | 'kg' | undefined): string {
+    return unit === 'kg' ? '/kg' : '/ud';
+  }
+
+  protected priceLabel(unit: 'unidad' | 'kg'): string {
+    return unit === 'kg' ? 'Precio por kg' : 'Precio por unidad';
   }
 
   protected formatDate(date: string): string {

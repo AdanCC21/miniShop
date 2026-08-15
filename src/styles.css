@@ -65,6 +65,17 @@ body {
     }
 }
 
+@keyframes ms-toast-in {
+    from {
+        opacity: 0;
+        transform: translateX(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
 @keyframes ms-modal-in {
     from {
         opacity: 0;
@@ -97,12 +108,17 @@ body {
     animation: ms-fade-out 0.2s ease-in forwards;
 }
 
+.ms-toast-in {
+    animation: ms-toast-in 0.25s ease-out backwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .ms-fade-in-up,
     .ms-card-in,
     .ms-modal-backdrop,
     .ms-modal-panel,
-    .ms-fade-out {
+    .ms-fade-out,
+    .ms-toast-in {
         animation: none;
     }
 }

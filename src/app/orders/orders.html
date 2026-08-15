@@ -9,113 +9,288 @@
 
   <div class="grid grid-cols-3 gap-1 rounded-lg bg-gray-100 p-1">
     @for (item of tabs; track item.id) {
-      <button
-        type="button"
-        class="rounded-md px-3 py-2 text-sm font-medium transition cursor-pointer"
-        [class]="tab() === item.id ? 'bg-white text-black shadow' : 'text-gray-500 hover:text-black'"
-        (click)="selectTab(item.id)"
-      >
-        {{ item.label }}
-      </button>
+    <button type="button" class="rounded-md px-3 py-2 text-sm font-medium transition cursor-pointer"
+      [class]="tab() === item.id ? 'bg-white text-black shadow' : 'text-gray-500 hover:text-black'"
+      (click)="selectTab(item.id)">
+      {{ item.label }}
+    </button>
     }
   </div>
 
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div class="flex flex-wrap items-center gap-2">
       @for (filter of dateFilters; track filter.id) {
-        <button
-          type="button"
-          class="rounded-lg px-3 py-1.5 text-sm font-medium transition cursor-pointer"
-          [class]="dateFilter() === filter.id
+      <button type="button" class="rounded-lg px-3 py-1.5 text-sm font-medium transition cursor-pointer" [class]="dateFilter() === filter.id
             ? 'bg-(--primary) text-(--primary-foreground)'
-            : 'border border-gray-300 bg-white text-gray-600 hover:bg-gray-100'"
-          (click)="selectDateFilter(filter.id)"
-        >
-          {{ filter.label }}
-        </button>
+            : 'border border-gray-300 bg-white text-gray-600 hover:bg-gray-100'" (click)="selectDateFilter(filter.id)">
+        {{ filter.label }}
+      </button>
       }
     </div>
 
     <div class="flex flex-wrap items-center gap-3">
-      <app-select
-        label="Proveedor"
-        [value]="supplierFilter()"
-        [options]="supplierOptions()"
-        (valueChange)="onSupplierFilterChange($event)"
-      />
-      <app-select
-        label="Ordenar"
-        [value]="sortBy()"
-        [options]="sortOptions"
-        (valueChange)="onSortChange($event)"
-      />
+      <app-select label="Proveedor" [value]="supplierFilter()" [options]="supplierOptions()"
+        (valueChange)="onSupplierFilterChange($event)" />
+      <app-select label="Ordenar" [value]="sortBy()" [options]="sortOptions" (valueChange)="onSortChange($event)" />
     </div>
   </div>
 
-  @if (visibleOrders().length > 0) {
-    <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      @for (order of visibleOrders(); track order.id; let i = $index) {
-        <button
-          type="button"
-          (click)="openDetails(order)"
-          animate.enter="ms-card-in"
-          [style.--index]="i"
-          class="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white p-5 text-left transition hover:shadow-md"
-        >
-          <div class="flex items-center gap-3">
-            <span
-              class="flex h-11 w-11 items-center justify-center rounded-lg text-sm font-bold text-white"
-              [style.background]="order.companyColor"
-            >
-              {{ companyInitial(order) }}
-            </span>
-            <div>
-              <h3 class="text-sm font-semibold text-black">{{ order.company }}</h3>
-              <p class="text-xs text-gray-500">{{ totalProducts(order) }} productos</p>
-            </div>
-          </div>
-          <div class="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 text-xs">
-            <span class="text-gray-500">Registrado el {{ formatDate(order.createdDate) }}</span>
-          </div>
-        </button>
-      }
-    </section>
-  } @else {
-    <div class="rounded-lg border border-dashed border-gray-300 bg-white p-12 text-center">
-      <p class="text-sm font-medium text-gray-500">{{ emptyMessage() }}</p>
+  @if (tab() === 'waiting' && scheduledOrders().length > 0) {
+  <section class="rounded-lg border border-gray-200 bg-white p-5">
+    <div class="mb-4 flex items-center gap-2">
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-500">Pedidos programados</h2>
+      <span class="rounded-full bg-(--secondary) px-2 py-0.5 text-xs font-medium text-(--secondary-foreground)">
+        {{ scheduledOrders().length }}
+      </span>
     </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (order of scheduledOrders(); track order.id; let i = $index) {
+      @if (order.recurrence; as rec) {
+      <div animate.enter="ms-card-in" [style.--index]="i"
+        class="flex flex-col gap-3 rounded-lg border border-dashed border-(--primary)/40 bg-white p-5">
+        <div class="flex items-center gap-3">
+          <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white"
+            [style.background]="order.companyColor">
+            {{ companyInitial(order) }}
+          </span>
+          <div class="min-w-0 flex-1">
+            <h3 class="truncate text-sm font-semibold text-black">{{ order.company }}</h3>
+            <p class="text-xs text-(--primary)">{{ recurrenceLabel(rec.type, order.expectedDate) }}</p>
+          </div>
+          <button type="button" (click)="openDetails(order)" aria-label="Ver detalles"
+            class="rounded-md p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-black">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-gray-500">Próxima entrega</span>
+          <span class="font-medium text-(--primary)">{{ formatDate(order.expectedDate) }}</span>
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-gray-500">{{ totalProducts(order) }} productos</span>
+          <span class="font-medium text-gray-900">${{ formatPrice(orderTotal(order)) }}</span>
+        </div>
+
+        <div class="flex gap-2 border-t border-gray-100 pt-3">
+          <app-button text="Registrar entrega" variant="secondary" (clicked)="registerDelivery(order)" extraClass="flex-1" />
+          <app-button text="Cancelar" variant="outline" (clicked)="cancelScheduled(order)" extraClass="flex-1" />
+        </div>
+      </div>
+      }
+      }
+    </div>
+  </section>
+  }
+
+  @if (visibleOrders().length > 0) {
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (order of visibleOrders(); track order.id; let i = $index) {
+    <button type="button" (click)="openDetails(order)" animate.enter="ms-card-in" [style.--index]="i"
+      class="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white p-5 text-left transition hover:shadow-md">
+      <div class="flex items-center gap-3">
+        <span class="flex h-11 w-11 items-center justify-center rounded-lg text-sm font-bold text-white"
+          [style.background]="order.companyColor">
+          {{ companyInitial(order) }}
+        </span>
+        <div>
+          <h3 class="text-sm font-semibold text-black">{{ order.company }}</h3>
+          <p class="text-xs text-gray-500">{{ totalProducts(order) }} productos</p>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 text-xs">
+        <span class="text-gray-500">Registrado el {{ formatDate(order.createdDate) }}</span>
+      </div>
+    </button>
+    }
+  </section>
+  } @else {
+  <div class="rounded-lg border border-dashed border-gray-300 bg-white p-12 text-center">
+    <p class="text-sm font-medium text-gray-500">{{ emptyMessage() }}</p>
+  </div>
   }
 </div>
 
 @if (selectedOrder(); as order) {
-  <app-modal title="Detalles del pedido" size="lg" (close)="closeDetails()">
-    <div class="space-y-4">
-      <div class="flex items-center gap-3">
-        <span
-          class="flex h-12 w-12 items-center justify-center rounded-lg text-base font-bold text-white"
-          [style.background]="order.companyColor"
-        >
-          {{ companyInitial(order) }}
-        </span>
-        <div>
-          <h3 class="text-base font-semibold text-black">{{ order.company }}</h3>
-          <p class="text-sm text-gray-500">Proveedor</p>
-        </div>
+<app-modal title="Detalles del pedido" size="lg" (close)="closeDetails()">
+  <div class="space-y-4">
+    <div class="flex items-center gap-3">
+      <span class="flex h-12 w-12 items-center justify-center rounded-lg text-base font-bold text-white"
+        [style.background]="order.companyColor">
+        {{ companyInitial(order) }}
+      </span>
+      <div>
+        <h3 class="text-base font-semibold text-black">{{ order.company }}</h3>
+        <p class="text-sm text-gray-500">Proveedor</p>
       </div>
+    </div>
 
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div>
-          <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Fecha creada</p>
-          <p class="text-sm font-medium text-gray-900">{{ formatDate(order.createdDate) }}</p>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div>
+        <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Fecha creada</p>
+        <p class="text-sm font-medium text-gray-900">{{ formatDate(order.createdDate) }}</p>
+      </div>
+      <div>
+        <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Entrega esperada</p>
+        <p class="text-sm font-medium text-gray-900">{{ formatDate(order.expectedDate) }}</p>
+      </div>
+      <div>
+        <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Total de productos</p>
+        <p class="text-sm font-medium text-gray-900">{{ totalProducts(order) }}</p>
+      </div>
+    </div>
+
+    @if (order.recurrence; as rec) {
+    <div class="rounded-lg border border-dashed border-(--primary)/40 bg-(--secondary) px-4 py-3">
+      <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Repetición</p>
+      <p class="mt-0.5 text-sm font-medium text-gray-900">{{ recurrenceLabel(rec.type, order.expectedDate) }}</p>
+    </div>
+    }
+
+    <div class="overflow-hidden rounded-lg border border-gray-200">
+      <table class="w-full text-left text-sm">
+        <thead>
+          <tr class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+            <th class="px-4 py-3 font-semibold">Producto</th>
+            <th class="px-4 py-3 font-semibold">Cantidad</th>
+            <th class="px-4 py-3 font-semibold">Recibido</th>
+            <th class="px-4 py-3 font-semibold">Precio</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of order.products; track product.name) {
+          <tr class="border-b border-gray-100 last:border-b-0 transition hover:bg-gray-50">
+            <td class="px-4 py-3 text-gray-700">{{ product.name }}</td>
+            <td class="px-4 py-3 text-gray-700">
+              {{ product.quantity }} {{ unitSuffix(product.unit) }}
+            </td>
+            <td class="px-4 py-3 text-gray-700">
+              @if (product.received !== undefined) {
+              <span class="font-medium text-emerald-600">{{ product.received }} {{ unitSuffix(product.unit) }}</span>
+              } @else {
+              <span class="text-gray-400">—</span>
+              }
+            </td>
+            <td class="px-4 py-3 font-medium text-gray-900">
+              ${{ product.price }}<span class="text-gray-400"> {{ priceSuffix(product.unit) }}</span>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (order.status !== 'finalizado') {
+    <div class="flex justify-end border-t border-gray-200 pt-4">
+      @if (order.recurrence) {
+      <div class="flex flex-wrap justify-end gap-3">
+        <app-button variant="danger" text="Cancelar programación" (clicked)="cancelScheduled(order)" />
+        <app-button variant="outline" text="Editar pedido" (clicked)="editScheduled(order)" />
+        <app-button variant="outline" text="Registrar recibido" (clicked)="openReceived(order)" />
+        <app-button text="Registrar entrega" (clicked)="registerDelivery(order)" />
+      </div>
+      } @else {
+      <div class="flex flex-wrap justify-end gap-3">
+        <app-button variant="outline" text="Registrar recibido" (clicked)="openReceived(order)" />
+        <app-button text="Marcar como finalizado" (clicked)="markAsFinalized(order)" />
+      </div>
+      }
+    </div>
+    }
+  </div>
+</app-modal>
+}
+
+@if (newOrderOpen()) {
+<app-modal [title]="editingOrderId() ? 'Editar pedido' : 'Nuevo pedido'" size="wide" (close)="closeNewOrder()">
+  <div class="space-y-6" animate.enter="ms-fade-in-up">
+    <div class="flex flex-col md:flex-row md:w-full gap-4">
+      <app-search-suggestions class="md:flex-1" label="Proveedor" placeholder="Escribe el nombre del proveedor..."
+        [query]="providerQuery()" [items]="suggestions()" [itemTemplate]="providerTpl"
+        (queryChange)="onProviderChange($event)" (selected)="selectSupplier($event)" />
+      <ng-template #providerTpl let-supplier>
+        <span class="flex h-7 w-7 items-center justify-center rounded-md text-xs font-bold text-white"
+          [style.background]="supplier.color">
+          {{ supplier.name.charAt(0) }}
+        </span>
+        <span class="text-sm text-gray-800">{{ supplier.name }}</span>
+      </ng-template>
+
+      <app-input class="md:flex-1" id="new-order-expected" label="Fecha de entrega esperada" type="date"
+        [value]="expectedDate()" (valueChange)="onExpectedDateChange($event)" />
+    </div>
+
+    <div class="space-y-2">
+      <h5 class="text-base">Repetir pedido cada :</h5>
+      <div class="flex flex-wrap gap-3">
+        <app-button text="Una sola vez" (clicked)="selectRecurrence(null)"
+          [variant]="recurrence() === null ? 'primary' : 'outline'" />
+        <app-button [text]="'Cada ' + getWeekDay()" (clicked)="selectRecurrence('semanal')"
+          [variant]="recurrence() === 'semanal' ? 'primary' : 'outline'" />
+        <app-button text="Cada 2 semanas" (clicked)="selectRecurrence('quincenal')"
+          [variant]="recurrence() === 'quincenal' ? 'primary' : 'outline'" />
+        <app-button [text]="'Cada ' + getDaySelected() + ' de cada mes'" (clicked)="selectRecurrence('mensual')"
+          [variant]="recurrence() === 'mensual' ? 'primary' : 'outline'" />
+        <app-button text="Todos los días" (clicked)="selectRecurrence('diario')"
+          [variant]="recurrence() === 'diario' ? 'primary' : 'outline'" />
+      </div>
+    </div>
+
+    @if (providerNotFound()) {
+    <div class="rounded-lg border border-dashed border-gray-300 p-4 my-4">
+      <p class="text-sm font-medium text-gray-700">Proveedor no encontrado</p>
+      <p class="text-xs text-gray-500">
+        Escribe manualmente los productos que quieres pedir de {{ providerQuery().trim() }}.
+      </p>
+      <div class="mt-3 flex flex-wrap items-end gap-3">
+        <div class="min-w-0 flex-1">
+          <app-input id="manual-name" label="Producto" type="text" placeholder="Nombre del producto"
+            [value]="manualName()" (valueChange)="onManualNameChange($event)" />
+        </div>
+        <div class="w-28">
+          <app-input id="manual-qty" label="Cantidad" type="number" placeholder="1" [value]="manualQty()"
+            (valueChange)="onManualQtyChange($event)" />
         </div>
         <div>
-          <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Entrega esperada</p>
-          <p class="text-sm font-medium text-gray-900">{{ formatDate(order.expectedDate) }}</p>
+          <span class="mb-1 block text-sm font-medium text-gray-700">Unidad</span>
+          <div class="grid grid-cols-2 gap-1 rounded-lg bg-gray-100 p-1">
+            <button type="button" class="rounded-md px-3 py-2 text-sm font-medium transition cursor-pointer"
+              [class]="manualUnit() === 'unidad' ? 'bg-white text-black shadow' : 'text-gray-500 hover:text-black'"
+              (click)="onManualUnitChange('unidad')">
+              Unidad
+            </button>
+            <button type="button" class="rounded-md px-3 py-2 text-sm font-medium transition cursor-pointer"
+              [class]="manualUnit() === 'kg' ? 'bg-white text-black shadow' : 'text-gray-500 hover:text-black'"
+              (click)="onManualUnitChange('kg')">
+              Kilo
+            </button>
+          </div>
         </div>
-        <div>
-          <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Total de productos</p>
-          <p class="text-sm font-medium text-gray-900">{{ totalProducts(order) }}</p>
+        <div class="w-32">
+          <app-input id="manual-price" [label]="priceLabel(manualUnit())" type="number" step="0.01" min="0"
+            placeholder="0.00" [value]="manualPrice()" (valueChange)="onManualPriceChange($event)" />
         </div>
+        <app-button text="Agregar" (clicked)="addManual()" />
+      </div>
+    </div>
+    }
+
+    @if (matchedSupplier(); as supplier) {
+    <div class="space-y-3">
+      <div class="flex flex-wrap items-end gap-3">
+        <div class="min-w-0 flex-1">
+          <app-input id="catalog-search" label="Buscar artículo" type="text" placeholder="Busca un producto..."
+            [value]="productQuery()" (valueChange)="onProductQueryChange($event)" />
+        </div>
+        <div class="w-32">
+          <app-input id="catalog-qty" label="Cantidad" type="number" placeholder="1" [value]="addQty()"
+            (valueChange)="onAddQtyChange($event)" />
+        </div>
+        <app-button text="Agregar" (clicked)="addManualWithCatalog(productQuery(),addQty())" />
       </div>
 
       <div class="overflow-hidden rounded-lg border border-gray-200">
@@ -123,208 +298,137 @@
           <thead>
             <tr class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
               <th class="px-4 py-3 font-semibold">Producto</th>
-              <th class="px-4 py-3 font-semibold">Cantidad</th>
               <th class="px-4 py-3 font-semibold">Precio</th>
+              <th class="px-4 py-3 text-right font-semibold">Acción</th>
             </tr>
           </thead>
           <tbody>
-            @for (product of order.products; track product.name) {
-              <tr class="border-b border-gray-100 last:border-b-0 transition hover:bg-gray-50">
-                <td class="px-4 py-3 text-gray-700">{{ product.name }}</td>
-                <td class="px-4 py-3 text-gray-700">{{ product.quantity }}</td>
-                <td class="px-4 py-3 font-medium text-gray-900">${{ product.price }}</td>
-              </tr>
+            @for (product of visibleCatalogProducts(); track product.name) {
+            <tr class="border-b border-gray-100 last:border-b-0 transition hover:bg-gray-50">
+              <td class="px-4 py-3 text-gray-700">{{ product.name }}</td>
+              <td class="px-4 py-3 font-medium text-gray-900">${{ product.price }}</td>
+              <td class="hidden md:block px-4 py-3 text-right space-x-4 space-y-4">
+                <app-button text="Agregar" variant="secondary" (clicked)="addFromCatalog(product)" />
+                <app-button text="Agregar 5" variant="secondary" (clicked)="addFromCatalog(product,5)" />
+                <app-button text="Agregar 10" variant="secondary" (clicked)="addFromCatalog(product,10)" />
+              </td>
+              <td class="md:hidden px-4 py-3 text-right space-x-4 space-y-4">
+                <app-button text="Agregar" variant="secondary" (clicked)="addFromCatalog(product)" />
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-400">
+                Sin resultados
+              </td>
+            </tr>
             }
           </tbody>
         </table>
       </div>
+    </div>
+    }
 
-      @if (order.status !== 'finalizado') {
-        <div class="flex justify-end border-t border-gray-200 pt-4">
-          <app-button text="Marcar como finalizado" (clicked)="markAsFinalized(order)" />
-        </div>
+    <hr class="opacity-40 mx-auto w-8/10" />
+
+    <div class="space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-semibold text-black">
+          Productos a pedir ({{ cart().length }})
+        </h3>
+        <span class="text-sm font-semibold text-(--primary)">Total: ${{ cartTotal() }}</span>
+      </div>
+
+      @if (cart().length > 0) {
+      <div class="overflow-hidden rounded-lg border border-gray-200">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+              <th class="px-4 py-3 font-semibold">Producto</th>
+              <th class="px-4 py-3 font-semibold">Cantidad</th>
+              <th class="px-4 py-3 font-semibold">Precio</th>
+              <th class="px-4 py-3 font-semibold">Total</th>
+              <th class="px-4 py-3 text-right font-semibold">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of cart(); track $index) {
+            <tr class="border-b border-gray-100 last:border-b-0 transition hover:bg-gray-50">
+              <td class="px-4 py-3 text-gray-700">{{ item.name }}</td>
+              <td class="px-4 py-3 text-gray-700">
+                {{ item.quantity }} {{ unitSuffix(item.unit) }}
+              </td>
+              <td class="px-4 py-3 font-medium text-gray-900">
+                ${{ item.price }}<span class="text-gray-400"> {{ priceSuffix(item.unit) }}</span>
+              </td>
+              <td class="px-4 py-3 font-medium text-gray-900">${{ lineTotal(item) }}</td>
+              <td class="px-4 py-3 text-right">
+                <button type="button"
+                  class="rounded-md px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50"
+                  (click)="removeCartItem($index)">
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      } @else {
+      <p class="text-sm text-gray-400">Aún no has agregado productos.</p>
       }
     </div>
-  </app-modal>
+
+    <div class="flex justify-end gap-3 border-t border-gray-200 pt-4">
+      <app-button variant="outline" text="Cancelar" (clicked)="closeNewOrder()" />
+      <app-button [text]="editingOrderId() ? 'Guardar cambios' : 'Crear pedido'" (clicked)="createOrder()" />
+    </div>
+  </div>
+</app-modal>
 }
 
-@if (newOrderOpen()) {
-  <app-modal title="Nuevo pedido" size="wide" (close)="closeNewOrder()">
-<div class="space-y-6" animate.enter="ms-fade-in-up">
-      <div class="relative">
-        <app-input
-          id="new-order-provider"
-          label="Proveedor"
-          type="text"
-          placeholder="Escribe el nombre del proveedor..."
-          [value]="providerQuery()"
-          (valueChange)="onProviderChange($event)"
-        />
-        @if (suggestions().length > 0 && !matchedSupplier()) {
-          <div class="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
-            @for (supplier of suggestions(); track supplier.name) {
-              <button
-                type="button"
-                (click)="selectSupplier(supplier)"
-                class="flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-50"
-              >
-                <span
-                  class="flex h-7 w-7 items-center justify-center rounded-md text-xs font-bold text-white"
-                  [style.background]="supplier.color"
-                >
-                  {{ supplier.name.charAt(0) }}
-                </span>
-                {{ supplier.name }}
-              </button>
-            }
-          </div>
-        }
-      </div>
-
-      <app-input
-        id="new-order-expected"
-        label="Fecha de entrega esperada"
-        type="date"
-        [value]="expectedDate()"
-        (valueChange)="onExpectedDateChange($event)"
-      />
-
-      @if (matchedSupplier(); as supplier) {
-        <div class="space-y-3">
-          <div class="flex flex-wrap items-end gap-3">
-            <div class="min-w-0 flex-1">
-              <app-input
-                id="catalog-search"
-                label="Buscar artículo"
-                type="text"
-                placeholder="Busca un producto..."
-                [value]="productQuery()"
-                (valueChange)="onProductQueryChange($event)"
-              />
-            </div>
-            <div class="w-32">
-              <app-input
-                id="catalog-qty"
-                label="Cantidad"
-                type="number"
-                placeholder="1"
-                [value]="addQty()"
-                (valueChange)="onAddQtyChange($event)"
-              />
-            </div>
-          </div>
-
-          <div class="overflow-hidden rounded-lg border border-gray-200">
-            <table class="w-full text-left text-sm">
-              <thead>
-                <tr class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
-                  <th class="px-4 py-3 font-semibold">Producto</th>
-                  <th class="px-4 py-3 font-semibold">Precio</th>
-                  <th class="px-4 py-3 text-right font-semibold">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (product of visibleCatalogProducts(); track product.name) {
-                  <tr class="border-b border-gray-100 last:border-b-0 transition hover:bg-gray-50">
-                    <td class="px-4 py-3 text-gray-700">{{ product.name }}</td>
-                    <td class="px-4 py-3 font-medium text-gray-900">${{ product.price }}</td>
-                    <td class="px-4 py-3 text-right">
-                      <app-button text="Agregar" variant="secondary" (clicked)="addFromCatalog(product)" />
-                    </td>
-                  </tr>
-                } @empty {
-                  <tr>
-                    <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-400">
-                      Sin resultados
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
-      }
-
-      @if (providerNotFound()) {
-        <div class="rounded-lg border border-dashed border-gray-300 p-4">
-          <p class="text-sm font-medium text-gray-700">Proveedor no encontrado</p>
-          <p class="text-xs text-gray-500">
-            Escribe manualmente los productos que quieres pedir de {{ providerQuery().trim() }}.
-          </p>
-          <div class="mt-3 flex flex-wrap items-end gap-3">
-            <div class="min-w-0 flex-1">
-              <app-input
-                id="manual-name"
-                label="Producto"
-                type="text"
-                placeholder="Nombre del producto"
-                [value]="manualName()"
-                (valueChange)="onManualNameChange($event)"
-              />
-            </div>
-            <div class="w-32">
-              <app-input
-                id="manual-qty"
-                label="Cantidad"
-                type="number"
-                placeholder="1"
-                [value]="manualQty()"
-                (valueChange)="onManualQtyChange($event)"
-              />
-            </div>
-            <app-button text="Agregar" (clicked)="addManual()" />
-          </div>
-        </div>
-      }
-
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-black">
-            Productos a pedir ({{ cart().length }})
-          </h3>
-          <span class="text-sm font-semibold text-(--primary)">Total: ${{ cartTotal() }}</span>
-        </div>
-
-        @if (cart().length > 0) {
-          <div class="overflow-hidden rounded-lg border border-gray-200">
-            <table class="w-full text-left text-sm">
-              <thead>
-                <tr class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
-                  <th class="px-4 py-3 font-semibold">Producto</th>
-                  <th class="px-4 py-3 font-semibold">Cantidad</th>
-                  <th class="px-4 py-3 font-semibold">Precio</th>
-                  <th class="px-4 py-3 text-right font-semibold">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (item of cart(); track $index) {
-                  <tr class="border-b border-gray-100 last:border-b-0 transition hover:bg-gray-50">
-                    <td class="px-4 py-3 text-gray-700">{{ item.name }}</td>
-                    <td class="px-4 py-3 text-gray-700">{{ item.quantity }}</td>
-                    <td class="px-4 py-3 font-medium text-gray-900">${{ item.price }}</td>
-                    <td class="px-4 py-3 text-right">
-                      <button
-                        type="button"
-                        class="rounded-md px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50"
-                        (click)="removeCartItem($index)"
-                      >
-                        Eliminar
-                      </button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        } @else {
-          <p class="text-sm text-gray-400">Aún no has agregado productos.</p>
-        }
-      </div>
-
-      <div class="flex justify-end gap-3 border-t border-gray-200 pt-4">
-        <app-button variant="outline" text="Cancelar" (clicked)="closeNewOrder()" />
-        <app-button text="Crear pedido" (clicked)="createOrder()" />
+@if (receivedOrder(); as order) {
+<app-modal title="Registrar lo recibido" size="lg" (close)="closeReceived()">
+  <div class="space-y-4">
+    <div class="flex items-center gap-3">
+      <span class="flex h-12 w-12 items-center justify-center rounded-lg text-base font-bold text-white"
+        [style.background]="order.companyColor">
+        {{ companyInitial(order) }}
+      </span>
+      <div>
+        <h3 class="text-base font-semibold text-black">{{ order.company }}</h3>
+        <p class="text-sm text-gray-500">Entrega esperada el {{ formatDate(order.expectedDate) }}</p>
       </div>
     </div>
-  </app-modal>
+
+    <div class="overflow-hidden rounded-lg border border-gray-200">
+      <table class="w-full text-left text-sm">
+        <thead>
+          <tr class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+            <th class="px-4 py-3 font-semibold">Producto</th>
+            <th class="px-4 py-3 font-semibold">Pedido</th>
+            <th class="px-4 py-3 font-semibold">Recibido</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of receivedProducts(); track $index) {
+          <tr class="border-b border-gray-100 last:border-b-0 transition hover:bg-gray-50">
+            <td class="px-4 py-3 text-gray-700">{{ item.name }}</td>
+            <td class="px-4 py-3 text-gray-700">{{ item.quantity }} {{ unitSuffix(item.unit) }}</td>
+            <td class="px-4 py-3">
+              <input type="number" min="0" step="0.01" [value]="item.received" (input)="onReceivedChange($index, $event)"
+                class="w-24 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 outline-none transition focus:border-(--primary)" />
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex justify-end gap-3 border-t border-gray-200 pt-4">
+      <app-button variant="outline" text="Cancelar" (clicked)="closeReceived()" />
+      <app-button text="Guardar" (clicked)="saveReceived()" />
+    </div>
+  </div>
+</app-modal>
 }

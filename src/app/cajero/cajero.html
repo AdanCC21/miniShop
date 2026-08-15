@@ -10,38 +10,15 @@
       <h2 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">Registrar producto</h2>
 
       <div class="space-y-4">
-        <div class="relative" (click)="$event.stopPropagation()">
-          <label for="product-query" class="mb-1 block text-sm font-medium text-gray-700">
-            Producto (nombre o código)
-          </label>
-          <input id="product-query" type="text" [value]="productQuery()" (input)="onQueryChange($event)"
-            (focus)="dropdownOpen.set(true)" placeholder="Escribe o escanea..."
-            class="w-full border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-(--primary)"
-            [class]="dropdownOpen() && productQuery().trim() ? 'rounded-t-lg':'rounded-lg'" />
-
-          @if (dropdownOpen() && productQuery().trim() && matches().length === 0) {
-          <div class="absolute bottom-0 translate-y-full bg-white p-2 size-fit border border-black/20 rounded-b-lg">
-            <p class="text-sm">Sin resultados para "{{ productQuery() }}"</p>
-          </div>
-          }
-
-          @if (dropdownOpen() && matches().length > 0) {
-          <ul
-            class="absolute bottom-0 translate-y-full w-full bg-white max-h-40 overflow-y-auto rounded-b-lg border border-gray-200">
-            @for (match of matches(); track match.code) {
-            <li>
-              <button type="button" (click)="selectProduct(match)"
-                class="flex w-full items-center justify-between gap-3 border-b border-gray-100 px-3 py-2 text-left text-sm transition last:border-b-0 hover:bg-(--secondary)">
-                <span class="font-medium text-gray-800">{{ match.name }}</span>
-                <span class="text-xs text-gray-500">
-                  {{ match.code }} · ${{ formatPrice(match.price) }}
-                </span>
-              </button>
-            </li>
-            }
-          </ul>
-          }
-        </div>
+        <app-search-suggestions label="Producto (nombre o código)" placeholder="Escribe o escanea..."
+          [query]="productQuery()" [items]="matches()" [emptyMessage]="productEmptyMessage()"
+          [itemTemplate]="productTpl" (queryChange)="onQueryChange($event)" (selected)="selectProduct($event)" />
+        <ng-template #productTpl let-product>
+          <span class="font-medium text-gray-800">{{ product.name }}</span>
+          <span class="ml-auto text-xs text-gray-500">
+            {{ product.code }} · ${{ formatPrice(product.price) }}
+          </span>
+        </ng-template>
 
         <div class="flex flex-wrap items-end gap-3">
           <label for="quantity" class="flex-1 text-sm font-medium text-gray-700">
