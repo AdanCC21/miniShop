@@ -129,6 +129,10 @@ Los ítems marcados con ❓ son ambiguos en la versión original y deben resolve
 - [x] ¿El cajero puede crear pedidos o solo consultarlos/recibirlos?
   - consultarlos y recibirlos
 
+## TO DO
+- [x] Agregar un horario para la tienda, es decir, los dias que la tiendita esta abierta.
+- [x] Los dias que este cerrada la tiendita no podran marcarse para recibir pedidos ese dia
+
 ## Usuarios de prueba
 Encargado: carlos.ruiz@ejemplo.com / encargado123
 Empleado: laura.gomez@ejemplo.com / empleado123

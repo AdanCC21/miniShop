@@ -3,26 +3,86 @@
 @import 'tailwindcss';
 
 :root {
+    color-scheme: light;
+
+    /* Marca */
     --primary: #1a7fd4;
-    --primary-foreground: white;
+    --primary-foreground: #ffffff;
+    --primary-bright: #1a7fd4;
 
     --secondary: #e8f4fd;
     --secondary-foreground: #1a5fa0;
 
-    --acent: #d0eaf9;
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
 
-    --gray: #fff6;
+    /* Superficies */
+    --surface: #f7fafd;
+    --card: #ffffff;
+    --text: #0f172a;
+    --backdrop: rgba(15, 23, 42, 0.5);
+    --hover-overlay: rgba(0, 0, 0, 0.05);
 
     font-family: "Hanken Grotesk", sans-serif;
     font-optical-sizing: auto;
     font-style: normal;
+}
 
+.dark {
+    color-scheme: dark;
+
+    --primary-bright: #6db6ef;
+    --secondary: #1d2c42;
+    --secondary-foreground: #a5cdf0;
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
+
+    --surface: #0f1420;
+    --card: #161d2c;
+    --text: #e7ecf5;
+    --backdrop: rgba(3, 7, 18, 0.6);
+    --hover-overlay: rgba(255, 255, 255, 0.08);
+
+    /* Rampa neutral clara sobre fondo oscuro */
+    --color-gray-50: #1a2233;
+    --color-gray-100: #202a3d;
+    --color-gray-200: #26324a;
+    --color-gray-300: #35415c;
+    --color-gray-400: #94a1b8;
+    --color-gray-500: #a2aec1;
+    --color-gray-600: #b1bccd;
+    --color-gray-700: #c4cddb;
+    --color-gray-800: #d6deea;
+    --color-gray-900: #e7ecf5;
+    --color-black: #eef3fa;
+
+    /* Estados */
+    --color-red-50: #2b141b;
+    --color-red-100: #3a1a24;
+    --color-red-200: #4c2230;
+    --color-red-600: #f87171;
+    --color-red-700: #fca5a5;
+
+    --color-green-100: #0f2e23;
+    --color-green-600: #4ade80;
+    --color-green-700: #86efac;
+
+    --color-emerald-50: #0e2b22;
+    --color-emerald-200: #175e4a;
+    --color-emerald-600: #34d399;
+
+    --color-blue-50: #0e2236;
+    --color-blue-200: #174a75;
+
+    --color-amber-50: #2c2311;
+    --color-amber-200: #5c4a1a;
 }
 
 body {
     margin: 0;
-    background-color: #f7fafd;
-    color: black;
+    background-color: var(--surface);
+    color: var(--text);
+    transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 @keyframes ms-fade-in-up {
@@ -120,5 +180,9 @@ body {
     .ms-fade-out,
     .ms-toast-in {
         animation: none;
+    }
+
+    body {
+        transition: none;
     }
 }

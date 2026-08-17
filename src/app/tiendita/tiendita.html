@@ -1,12 +1,59 @@
 <div class="space-y-6" animate.enter="ms-fade-in-up">
   <div>
     <h1 class="text-2xl font-bold text-black">Tiendita</h1>
-    <p class="text-sm text-gray-500">Edita la información de tu tiendita.</p>
   </div>
+
+  @if (currentSales(); as month) {
+  <section>
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500">
+      Resumen de ventas del mes · {{ monthLabel(month.month) }}
+    </h2>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="rounded-lg border border-gray-200 bg-(--card) p-5">
+        <p class="text-sm font-medium text-gray-500">Total vendido</p>
+        <p class="mt-2 text-2xl font-bold text-black">${{ formatPrice(month.total) }}</p>
+      </div>
+      <div class="rounded-lg border border-gray-200 bg-(--card) p-5">
+        <p class="text-sm font-medium text-gray-500">Ventas realizadas</p>
+        <p class="mt-2 text-2xl font-bold text-black">{{ month.sales }}</p>
+      </div>
+      <div class="rounded-lg border border-gray-200 bg-(--card) p-5">
+        <p class="text-sm font-medium text-gray-500">Productos vendidos</p>
+        <p class="mt-2 text-2xl font-bold text-black">{{ month.productsSold }}</p>
+      </div>
+    </div>
+  </section>
+  }
+
+  <section>
+    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500">Últimos 3 meses</h2>
+    <div class="overflow-hidden rounded-lg border border-gray-200 bg-(--card)">
+      <table class="w-full text-left text-sm">
+        <thead>
+          <tr class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+            <th class="px-4 py-3 font-semibold">Mes</th>
+            <th class="px-4 py-3 font-semibold">Ventas</th>
+            <th class="px-4 py-3 font-semibold">Productos vendidos</th>
+            <th class="px-4 py-3 font-semibold">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of lastMonths(); track item.month) {
+          <tr class="border-b border-gray-100 last:border-b-0 transition hover:bg-gray-50">
+            <td class="px-4 py-3 font-medium text-gray-900">{{ monthLabel(item.month) }}</td>
+            <td class="px-4 py-3 text-gray-700">{{ item.sales }}</td>
+            <td class="px-4 py-3 text-gray-700">{{ item.productsSold }}</td>
+            <td class="px-4 py-3 font-medium text-gray-900">${{ formatPrice(item.total) }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
 
   <section>
     <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500">Información de la tiendita</h2>
-    <div class="max-w-xl rounded-lg border border-gray-200 bg-white p-6">
+    <div class="rounded-lg border border-gray-200 bg-(--card) p-6">
       <div class="space-y-4">
         <app-input
           id="store-name"
@@ -23,6 +70,23 @@
           <p class="mt-1 text-xs text-gray-400">Los empleados lo usan para solicitar acceso.</p>
         </div>
 
+        <div>
+          <p class="mb-1 text-sm font-medium text-gray-700">Días de apertura</p>
+          <div class="flex flex-wrap gap-2">
+            @for (day of weekDays; track day.value) {
+            <button type="button"
+              class="rounded-lg px-3 py-1.5 text-sm font-medium transition cursor-pointer"
+              [class]="draftOpenDays().includes(day.value)
+                ? 'bg-(--primary) text-(--primary-foreground)'
+                : 'border border-gray-300 bg-(--card) text-gray-600 hover:bg-gray-100'"
+              (click)="toggleOpenDay(day.value)">
+              {{ day.label }}
+            </button>
+            }
+          </div>
+          <p class="mt-1 text-xs text-gray-400">Marca los días en que tu tiendita abre al público.</p>
+        </div>
+
         <div class="flex items-center gap-3">
           <app-button text="Guardar cambios" (clicked)="save()" />
           @if (saved()) {
@@ -33,3 +97,43 @@
     </div>
   </section>
 </div>
+
+@if (conflicts().length > 0) {
+<app-modal title="Conflicto de horario" size="lg" (close)="closeConflicts()">
+  <div class="space-y-4">
+    <p class="text-sm text-gray-600">
+      Hay pedidos programados para recibirse en un día que ahora está cerrado. Resuélvelos marcándolos como
+      finalizados o cancelándolos antes de guardar el nuevo horario.
+    </p>
+    <div class="overflow-hidden rounded-lg border border-gray-200">
+      <table class="w-full text-left text-sm">
+        <thead>
+          <tr class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+            <th class="px-4 py-3 font-semibold">Pedido</th>
+            <th class="px-4 py-3 font-semibold">Entrega</th>
+            <th class="px-4 py-3 text-right font-semibold">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of conflicts(); track order.id) {
+          <tr class="border-b border-gray-100 last:border-b-0 transition hover:bg-gray-50">
+            <td class="px-4 py-3">
+              <p class="font-medium text-gray-900">{{ order.company }}</p>
+              <p class="text-xs text-gray-500">{{ order.id }} · {{ order.products.length }} productos</p>
+            </td>
+            <td class="px-4 py-3 text-gray-700">{{ deliveryDay(order) }} · {{ formatDate(order.expectedDate) }}</td>
+            <td class="px-4 py-3">
+              <div class="flex justify-end gap-2">
+                <app-button text="Finalizar" variant="outline" (clicked)="resolveFinalize(order)" />
+                <app-button text="Cancelar" variant="danger" (clicked)="resolveCancel(order)" />
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="text-xs text-gray-500">El horario no se guardará hasta que no haya conflictos.</p>
+  </div>
+</app-modal>
+}

@@ -1,11 +1,11 @@
 <div
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-(--backdrop) p-4"
   animate.enter="ms-modal-backdrop"
   animate.leave="ms-fade-out"
   (mousedown)="onBackdropClick()"
 >
   <div
-    class="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl bg-white shadow-xl {{ sizeClass() }}"
+    class="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl bg-(--card) shadow-xl {{ sizeClass() }}"
     animate.enter="ms-modal-panel"
     animate.leave="ms-fade-out"
     (mousedown)="$event.stopPropagation()"

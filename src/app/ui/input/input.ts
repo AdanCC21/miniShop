@@ -10,6 +10,7 @@ export class InputComponent {
   readonly placeholder = input<string>('');
   readonly id = input<string>('');
   readonly value = input<string | number>('');
+  readonly disabled = input(false);
   readonly valueChange = output<string>();
 
   protected onInput(event: Event): void {

@@ -31,20 +31,20 @@
     </div>
 
     <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div class="rounded-lg border border-gray-200 bg-white p-5">
+      <div class="rounded-lg border border-gray-200 bg-(--card) p-5">
         <p class="text-sm font-medium text-gray-500">Encargado</p>
         <p class="mt-2 text-base font-semibold text-black">{{ encargado()?.name }}</p>
         <p class="truncate text-sm text-gray-500">{{ encargado()?.email }}</p>
       </div>
-      <div class="rounded-lg border border-gray-200 bg-white p-5">
+      <div class="rounded-lg border border-gray-200 bg-(--card) p-5">
         <p class="text-sm font-medium text-gray-500">Nombre</p>
         <p class="mt-2 text-base font-semibold text-black">{{ tienda.name }}</p>
       </div>
-      <div class="rounded-lg border border-gray-200 bg-white p-5">
+      <div class="rounded-lg border border-gray-200 bg-(--card) p-5">
         <p class="text-sm font-medium text-gray-500">Dirección</p>
         <p class="mt-2 text-base font-semibold text-black">{{ tienda.address }}</p>
       </div>
-      <div class="rounded-lg border border-gray-200 bg-white p-5">
+      <div class="rounded-lg border border-gray-200 bg-(--card) p-5">
         <p class="text-sm font-medium text-gray-500">UUID</p>
         <p class="mt-2 font-mono text-base font-semibold text-black">{{ tienda.uuid }}</p>
       </div>
@@ -52,7 +52,7 @@
 
     <section>
       <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500">Empleados</h2>
-      <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <div class="overflow-x-auto rounded-lg border border-gray-200 bg-(--card)">
         <table class="w-full text-left text-sm">
           <thead>
             <tr class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
@@ -92,14 +92,14 @@
                   <div class="flex items-center justify-end gap-2">
                     <button
                       type="button"
-                      class="rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100 cursor-pointer"
+                      class="rounded-md border border-gray-300 bg-(--card) px-2.5 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100 cursor-pointer"
                       (click)="changeRole(member)"
                     >
                       {{ roleActionLabel(member) }}
                     </button>
                     <button
                       type="button"
-                      class="rounded-md border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-50 cursor-pointer"
+                      class="rounded-md border border-red-200 bg-(--card) px-2.5 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-50 cursor-pointer"
                       (click)="confirmRemove(member)"
                     >
                       Remover
@@ -119,7 +119,7 @@
     <p class="text-sm text-gray-500">La tiendita que buscas no existe.</p>
     <a
       routerLink="/admin"
-      class="inline-block rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+      class="inline-block rounded-lg border border-gray-300 bg-(--card) px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
     >
       Volver a tienditas
     </a>

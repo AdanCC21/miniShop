@@ -5,7 +5,6 @@ import {
   formatDate,
   Order,
   OrderProduct,
-  ORDERS,
   RecurrenceType,
   Supplier,
   SupplierProduct,
@@ -14,10 +13,12 @@ import {
 import { dayOfMonth, nextOccurrence, recurrenceLabel as getRecurrenceLabel, weekdayName } from './recurrence';
 import { ModalComponent } from '../ui/modal/modal';
 import { ButtonComponent } from '../ui/button/button';
+import { ConfirmModalComponent } from '../ui/confirm-modal/confirm-modal';
 import { InputComponent } from '../ui/input/input';
 import { SearchSuggestionsComponent } from '../ui/search-suggestions/search-suggestions';
 import { SelectComponent, SelectOption } from '../ui/select/select';
 import { ToastService } from '../ui/toast/toast.service';
+import { StoreService } from '../store.service';
 
 export type OrdersTab = 'waiting' | 'unconfirmed' | 'finalized';
 export type DateFilter = 'todos' | 'hoy' | 'semana';
@@ -25,14 +26,19 @@ export type OrderSort = 'fecha' | 'proveedor' | 'total';
 
 @Component({
   selector: 'app-orders',
-  imports: [ButtonComponent, InputComponent, ModalComponent, SearchSuggestionsComponent, SelectComponent],
+  imports: [ButtonComponent, ConfirmModalComponent, InputComponent, ModalComponent, SearchSuggestionsComponent, SelectComponent],
   templateUrl: './orders.html'
 })
 export class OrdersComponent {
   protected readonly toast = inject(ToastService);
-  protected readonly orders = signal<Order[]>(ORDERS);
+  private readonly store = inject(StoreService);
+  protected readonly orders = this.store.orders;
   protected readonly tab = signal<OrdersTab>('waiting');
   protected readonly selectedOrder = signal<Order | null>(null);
+  protected readonly cancelTarget = signal<Order | null>(null);
+  protected readonly finalizeTarget = signal<Order | null>(null);
+  protected readonly deliveryTarget = signal<Order | null>(null);
+  protected readonly receivedSaveConfirm = signal(false);
 
   protected readonly tabs: { id: OrdersTab; label: string }[] = [
     { id: 'waiting', label: 'En espera' },
@@ -66,10 +72,21 @@ export class OrdersComponent {
   protected readonly manualPrice = signal(0);
   protected readonly expectedDate = signal(this.defaultExpectedDate());
   protected readonly recurrence = signal<RecurrenceType | null>(null);
+  protected readonly recurrenceDays = signal<number[]>([]);
   protected readonly cart = signal<OrderProduct[]>([]);
   protected readonly editingOrderId = signal<string | null>(null);
   protected readonly receivedOrder = signal<Order | null>(null);
   protected readonly receivedProducts = signal<OrderProduct[]>([]);
+
+  protected readonly weekDays: { value: number; label: string }[] = [
+    { value: 0, label: 'Dom' },
+    { value: 1, label: 'Lun' },
+    { value: 2, label: 'Mar' },
+    { value: 3, label: 'Mié' },
+    { value: 4, label: 'Jue' },
+    { value: 5, label: 'Vie' },
+    { value: 6, label: 'Sáb' }
+  ];
 
   getWeekDay(): string {
     return weekdayName(this.expectedDate());
@@ -233,17 +250,48 @@ export class OrdersComponent {
     this.selectedOrder.set(null);
   }
 
-  protected markAsFinalized(order: Order): void {
+  protected askFinalize(order: Order): void {
+    this.finalizeTarget.set(order);
+  }
+
+  protected cancelFinalize(): void {
+    this.finalizeTarget.set(null);
+  }
+
+  protected markAsFinalized(): void {
+    const order = this.finalizeTarget();
+    this.finalizeTarget.set(null);
+    if (!order) {
+      return;
+    }
     this.orders.update((list) =>
       list.map((item) => (item.id === order.id ? { ...item, status: 'finalizado' as const } : item))
     );
     this.closeDetails();
+    this.toast.success('Pedido finalizado', `${order.company} se marcó como finalizado.`);
+  }
+
+  protected askDelivery(order: Order): void {
+    this.deliveryTarget.set(order);
+  }
+
+  protected cancelDelivery(): void {
+    this.deliveryTarget.set(null);
+  }
+
+  protected confirmDelivery(): void {
+    const order = this.deliveryTarget();
+    this.deliveryTarget.set(null);
+    if (!order) {
+      return;
+    }
+    this.registerDelivery(order);
   }
 
   protected registerDelivery(order: Order): void {
     const today = this.todayISO();
     const current = this.nextDeliveryDate(order, today);
-    const next = nextOccurrence(current, order.recurrence!.type);
+    const next = nextOccurrence(current, order.recurrence!.type, order.recurrence?.days);
     this.orders.update((list) =>
       list.map((item) =>
         item.id === order.id
@@ -259,7 +307,20 @@ export class OrdersComponent {
     this.toast.success('Entrega registrada', `Próxima entrega: ${formatDate(next)}`);
   }
 
-  protected cancelScheduled(order: Order): void {
+  protected askCancelScheduled(order: Order): void {
+    this.cancelTarget.set(order);
+  }
+
+  protected cancelCancel(): void {
+    this.cancelTarget.set(null);
+  }
+
+  protected cancelScheduled(): void {
+    const order = this.cancelTarget();
+    this.cancelTarget.set(null);
+    if (!order) {
+      return;
+    }
     this.orders.update((list) => list.filter((item) => item.id !== order.id));
     this.closeDetails();
     this.toast.warning('Programación cancelada', `${order.company} ya no se repetirá.`);
@@ -276,6 +337,7 @@ export class OrdersComponent {
     this.manualPrice.set(0);
     this.expectedDate.set(order.expectedDate);
     this.recurrence.set(order.recurrence?.type ?? null);
+    this.recurrenceDays.set(order.recurrence?.days ?? []);
     this.cart.set(order.products.map((product) => ({ ...product })));
     this.closeDetails();
     this.newOrderOpen.set(true);
@@ -304,6 +366,19 @@ export class OrdersComponent {
     );
   }
 
+  protected askSaveReceived(): void {
+    this.receivedSaveConfirm.set(true);
+  }
+
+  protected cancelSaveReceived(): void {
+    this.receivedSaveConfirm.set(false);
+  }
+
+  protected confirmSaveReceived(): void {
+    this.receivedSaveConfirm.set(false);
+    this.saveReceived();
+  }
+
   protected saveReceived(): void {
     const order = this.receivedOrder();
     if (!order) {
@@ -322,12 +397,22 @@ export class OrdersComponent {
 
   protected selectRecurrence(type: RecurrenceType | null): void {
     this.recurrence.set(this.recurrence() === type ? null : type);
+    if (this.recurrence() !== 'dias_semana') {
+      this.recurrenceDays.set([]);
+    }
+  }
+
+  protected toggleRecurrenceDay(day: number): void {
+    this.recurrenceDays.update((days) =>
+      days.includes(day) ? days.filter((item) => item !== day) : [...days, day]
+    );
   }
 
   protected openNewOrder(): void {
     this.editingOrderId.set(null);
     this.expectedDate.set(this.defaultExpectedDate());
     this.recurrence.set(null);
+    this.recurrenceDays.set([]);
     this.newOrderOpen.set(true);
   }
 
@@ -433,9 +518,23 @@ export class OrdersComponent {
     if (!provider || this.cart().length === 0 || !this.expectedDate()) {
       return;
     }
+    if (this.recurrence() === 'dias_semana' && this.recurrenceDays().length === 0) {
+      this.toast.error('Selecciona al menos un día', 'Debes marcar qué días de la semana se repite.');
+      return;
+    }
+    const closedError = this.validateDeliveryDays();
+    if (closedError) {
+      this.toast.error('Tiendita cerrada', closedError);
+      return;
+    }
     const supplier = findSupplierByName(provider);
     const recurrence = this.recurrence();
     const editingId = this.editingOrderId();
+    const recurrenceData = recurrence
+      ? recurrence === 'dias_semana'
+        ? { type: recurrence, days: this.recurrenceDays() }
+        : { type: recurrence }
+      : undefined;
 
     if (editingId) {
       this.orders.update((list) =>
@@ -447,7 +546,7 @@ export class OrdersComponent {
                 companyColor: supplier?.color ?? '#6b7280',
                 products: this.cart(),
                 expectedDate: this.expectedDate(),
-                recurrence: recurrence ? { type: recurrence } : undefined
+                recurrence: recurrenceData
               }
             : order
         )
@@ -465,14 +564,37 @@ export class OrdersComponent {
       createdDate: this.todayISO(),
       expectedDate: this.expectedDate(),
       status: 'pendiente',
-      recurrence: recurrence ? { type: recurrence } : undefined
+      recurrence: recurrenceData
     };
     this.orders.update((list) => [...list, order]);
     this.closeNewOrder();
     this.toast.success(
       'Pedido creado',
-      recurrence ? `Se repetirá ${getRecurrenceLabel(recurrence, order.expectedDate).toLowerCase()}.` : 'Pedido registrado.'
+      recurrence
+        ? `Se repetirá ${getRecurrenceLabel(recurrence, order.expectedDate, this.recurrenceDays()).toLowerCase()}.`
+        : 'Pedido registrado.'
     );
+  }
+
+  private validateDeliveryDays(): string | null {
+    if (this.recurrence() === 'dias_semana') {
+      const closed = this.recurrenceDays().filter((day) => !this.store.isOpenDay(day));
+      if (closed.length > 0) {
+        const names = closed
+          .map((day) => ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][day])
+          .join(', ');
+        return `La tienda está cerrada los ${names}. Ajusta los días de repetición.`;
+      }
+      return null;
+    }
+    if (!this.store.isOpen(this.expectedDate())) {
+      const [year, month, day] = this.expectedDate().split('-').map(Number);
+      const name = new Intl.DateTimeFormat('es-MX', { weekday: 'long' }).format(
+        new Date(year, month - 1, day)
+      );
+      return `La tienda está cerrada el día ${name}. Elige otra fecha de entrega.`;
+    }
+    return null;
   }
 
   private resetNewOrder(): void {
@@ -485,6 +607,7 @@ export class OrdersComponent {
     this.manualPrice.set(0);
     this.expectedDate.set(this.defaultExpectedDate());
     this.recurrence.set(null);
+    this.recurrenceDays.set([]);
     this.editingOrderId.set(null);
     this.cart.set([]);
   }
@@ -509,7 +632,7 @@ export class OrdersComponent {
     let date = order.expectedDate;
     const type = order.recurrence!.type;
     while (date < today) {
-      date = nextOccurrence(date, type);
+      date = nextOccurrence(date, type, order.recurrence?.days);
     }
     return date;
   }
@@ -537,8 +660,8 @@ export class OrdersComponent {
     return value.toFixed(2);
   }
 
-  protected recurrenceLabel(type: RecurrenceType, date: string): string {
-    return getRecurrenceLabel(type, date);
+  protected recurrenceLabel(type: RecurrenceType, date: string, days?: number[]): string {
+    return getRecurrenceLabel(type, date, days);
   }
 
   protected unitSuffix(unit: 'unidad' | 'kg' | undefined): string {

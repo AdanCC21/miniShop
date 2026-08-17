@@ -1,6 +1,6 @@
 <article
   [routerLink]="['/products', code()]"
-  class="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition hover:shadow-md"
+  class="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-(--card) transition hover:shadow-md"
 >
   <img [src]="image()" [alt]="name()" class="h-44 w-full object-cover" />
   <div class="p-4">
@@ -14,7 +14,7 @@
     </div>
     <div class="mt-3 flex items-center justify-between">
       <span class="text-xs text-gray-500">Código: {{ code() }}</span>
-      <span class="text-sm font-bold text-(--primary)">${{ price() }}</span>
+      <span class="text-sm font-bold text-(--primary-bright)">${{ price() }}</span>
     </div>
   </div>
 </article>

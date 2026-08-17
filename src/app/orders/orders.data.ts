@@ -8,10 +8,11 @@ export interface OrderProduct {
 
 export type OrderStatus = 'pendiente' | 'finalizado';
 
-export type RecurrenceType = 'diario' | 'semanal' | 'quincenal' | 'mensual';
+export type RecurrenceType = 'diario' | 'semanal' | 'quincenal' | 'mensual' | 'dias_semana';
 
 export interface Recurrence {
   type: RecurrenceType;
+  days?: number[];
 }
 
 export interface Order {

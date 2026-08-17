@@ -10,7 +10,7 @@
   <div class="grid grid-cols-3 gap-1 rounded-lg bg-gray-100 p-1">
     @for (item of tabs; track item.id) {
     <button type="button" class="rounded-md px-3 py-2 text-sm font-medium transition cursor-pointer"
-      [class]="tab() === item.id ? 'bg-white text-black shadow' : 'text-gray-500 hover:text-black'"
+      [class]="tab() === item.id ? 'bg-(--card) text-black shadow' : 'text-gray-500 hover:text-black'"
       (click)="selectTab(item.id)">
       {{ item.label }}
     </button>
@@ -22,7 +22,8 @@
       @for (filter of dateFilters; track filter.id) {
       <button type="button" class="rounded-lg px-3 py-1.5 text-sm font-medium transition cursor-pointer" [class]="dateFilter() === filter.id
             ? 'bg-(--primary) text-(--primary-foreground)'
-            : 'border border-gray-300 bg-white text-gray-600 hover:bg-gray-100'" (click)="selectDateFilter(filter.id)">
+            : 'border border-gray-300 bg-(--card) text-gray-600 hover:bg-gray-100'"
+        (click)="selectDateFilter(filter.id)">
         {{ filter.label }}
       </button>
       }
@@ -36,7 +37,7 @@
   </div>
 
   @if (tab() === 'waiting' && scheduledOrders().length > 0) {
-  <section class="rounded-lg border border-gray-200 bg-white p-5">
+  <section class="rounded-lg border border-gray-200 bg-(--card) p-5">
     <div class="mb-4 flex items-center gap-2">
       <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-500">Pedidos programados</h2>
       <span class="rounded-full bg-(--secondary) px-2 py-0.5 text-xs font-medium text-(--secondary-foreground)">
@@ -47,8 +48,8 @@
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       @for (order of scheduledOrders(); track order.id; let i = $index) {
       @if (order.recurrence; as rec) {
-      <div animate.enter="ms-card-in" [style.--index]="i"
-        class="flex flex-col gap-3 rounded-lg border border-dashed border-(--primary)/40 bg-white p-5">
+      <div animate.enter="ms-card-in" [style.--index]="i" (click)="openDetails(order)"
+        class="flex cursor-pointer flex-col gap-3 rounded-lg border border-dashed border-(--primary-bright)/40 bg-(--card) p-5 transition hover:shadow-md">
         <div class="flex items-center gap-3">
           <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white"
             [style.background]="order.companyColor">
@@ -56,20 +57,13 @@
           </span>
           <div class="min-w-0 flex-1">
             <h3 class="truncate text-sm font-semibold text-black">{{ order.company }}</h3>
-            <p class="text-xs text-(--primary)">{{ recurrenceLabel(rec.type, order.expectedDate) }}</p>
+            <p class="text-xs text-(--primary-bright)">{{ recurrenceLabel(rec.type, order.expectedDate, rec.days) }}</p>
           </div>
-          <button type="button" (click)="openDetails(order)" aria-label="Ver detalles"
-            class="rounded-md p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-black">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-          </button>
         </div>
 
         <div class="flex items-center justify-between text-xs">
           <span class="text-gray-500">Próxima entrega</span>
-          <span class="font-medium text-(--primary)">{{ formatDate(order.expectedDate) }}</span>
+          <span class="font-medium text-(--primary-bright)">{{ formatDate(order.expectedDate) }}</span>
         </div>
         <div class="flex items-center justify-between text-xs">
           <span class="text-gray-500">{{ totalProducts(order) }} productos</span>
@@ -77,8 +71,7 @@
         </div>
 
         <div class="flex gap-2 border-t border-gray-100 pt-3">
-          <app-button text="Registrar entrega" variant="secondary" (clicked)="registerDelivery(order)" extraClass="flex-1" />
-          <app-button text="Cancelar" variant="outline" (clicked)="cancelScheduled(order)" extraClass="flex-1" />
+          <app-button text="Ver detalles" variant="secondary" (clicked)="openDetails(order)" extraClass="w-full" />
         </div>
       </div>
       }
@@ -91,7 +84,7 @@
   <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
     @for (order of visibleOrders(); track order.id; let i = $index) {
     <button type="button" (click)="openDetails(order)" animate.enter="ms-card-in" [style.--index]="i"
-      class="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white p-5 text-left transition hover:shadow-md">
+      class="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-(--card) p-5 text-left transition hover:shadow-md">
       <div class="flex items-center gap-3">
         <span class="flex h-11 w-11 items-center justify-center rounded-lg text-sm font-bold text-white"
           [style.background]="order.companyColor">
@@ -109,14 +102,14 @@
     }
   </section>
   } @else {
-  <div class="rounded-lg border border-dashed border-gray-300 bg-white p-12 text-center">
+  <div class="rounded-lg border border-dashed border-gray-300 bg-(--card) p-12 text-center">
     <p class="text-sm font-medium text-gray-500">{{ emptyMessage() }}</p>
   </div>
   }
 </div>
 
 @if (selectedOrder(); as order) {
-<app-modal title="Detalles del pedido" size="lg" (close)="closeDetails()">
+<app-modal title="Detalles del pedido" size="4xl" (close)="closeDetails()">
   <div class="space-y-4">
     <div class="flex items-center gap-3">
       <span class="flex h-12 w-12 items-center justify-center rounded-lg text-base font-bold text-white"
@@ -145,9 +138,10 @@
     </div>
 
     @if (order.recurrence; as rec) {
-    <div class="rounded-lg border border-dashed border-(--primary)/40 bg-(--secondary) px-4 py-3">
+    <div class="rounded-lg border border-dashed border-(--primary-bright)/40 bg-(--secondary) px-4 py-3">
       <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Repetición</p>
-      <p class="mt-0.5 text-sm font-medium text-gray-900">{{ recurrenceLabel(rec.type, order.expectedDate) }}</p>
+      <p class="mt-0.5 text-sm font-medium text-gray-900">{{ recurrenceLabel(rec.type, order.expectedDate, rec.days) }}
+      </p>
     </div>
     }
 
@@ -188,15 +182,15 @@
     <div class="flex justify-end border-t border-gray-200 pt-4">
       @if (order.recurrence) {
       <div class="flex flex-wrap justify-end gap-3">
-        <app-button variant="danger" text="Cancelar programación" (clicked)="cancelScheduled(order)" />
+        <app-button variant="danger" text="Cancelar programación" (clicked)="askCancelScheduled(order)" />
         <app-button variant="outline" text="Editar pedido" (clicked)="editScheduled(order)" />
         <app-button variant="outline" text="Registrar recibido" (clicked)="openReceived(order)" />
-        <app-button text="Registrar entrega" (clicked)="registerDelivery(order)" />
+        <app-button text="Registrar entrega" (clicked)="askDelivery(order)" />
       </div>
       } @else {
       <div class="flex flex-wrap justify-end gap-3">
         <app-button variant="outline" text="Registrar recibido" (clicked)="openReceived(order)" />
-        <app-button text="Marcar como finalizado" (clicked)="markAsFinalized(order)" />
+        <app-button text="Marcar como finalizado" (clicked)="askFinalize(order)" />
       </div>
       }
     </div>
@@ -221,7 +215,8 @@
       </ng-template>
 
       <app-input class="md:flex-1" id="new-order-expected" label="Fecha de entrega esperada" type="date"
-        [value]="expectedDate()" (valueChange)="onExpectedDateChange($event)" />
+        [value]="expectedDate()" [disabled]="recurrence() === 'diario' || recurrence() === 'dias_semana'"
+        (valueChange)="onExpectedDateChange($event)" />
     </div>
 
     <div class="space-y-2">
@@ -231,13 +226,32 @@
           [variant]="recurrence() === null ? 'primary' : 'outline'" />
         <app-button [text]="'Cada ' + getWeekDay()" (clicked)="selectRecurrence('semanal')"
           [variant]="recurrence() === 'semanal' ? 'primary' : 'outline'" />
+
         <app-button text="Cada 2 semanas" (clicked)="selectRecurrence('quincenal')"
           [variant]="recurrence() === 'quincenal' ? 'primary' : 'outline'" />
         <app-button [text]="'Cada ' + getDaySelected() + ' de cada mes'" (clicked)="selectRecurrence('mensual')"
           [variant]="recurrence() === 'mensual' ? 'primary' : 'outline'" />
+        <app-button text="Días específicos" (clicked)="selectRecurrence('dias_semana')"
+          [variant]="recurrence() === 'dias_semana' ? 'primary' : 'outline'" />
         <app-button text="Todos los días" (clicked)="selectRecurrence('diario')"
           [variant]="recurrence() === 'diario' ? 'primary' : 'outline'" />
       </div>
+
+      @if (recurrence() === 'dias_semana') {
+      <div class="space-y-2">
+        <span class="text-sm font-medium text-gray-700">Selecciona los días de la semana</span>
+        <div class="flex flex-wrap gap-2">
+          @for (day of weekDays; track day.value) {
+          <button type="button" class="rounded-lg px-3 py-1.5 text-sm font-medium transition cursor-pointer" [class]="recurrenceDays().includes(day.value)
+              ? 'bg-(--primary) text-(--primary-foreground)'
+              : 'border border-gray-300 bg-(--card) text-gray-600 hover:bg-gray-100'"
+            (click)="toggleRecurrenceDay(day.value)">
+            {{ day.label }}
+          </button>
+          }
+        </div>
+      </div>
+      }
     </div>
 
     @if (providerNotFound()) {
@@ -259,12 +273,12 @@
           <span class="mb-1 block text-sm font-medium text-gray-700">Unidad</span>
           <div class="grid grid-cols-2 gap-1 rounded-lg bg-gray-100 p-1">
             <button type="button" class="rounded-md px-3 py-2 text-sm font-medium transition cursor-pointer"
-              [class]="manualUnit() === 'unidad' ? 'bg-white text-black shadow' : 'text-gray-500 hover:text-black'"
+              [class]="manualUnit() === 'unidad' ? 'bg-(--card) text-black shadow' : 'text-gray-500 hover:text-black'"
               (click)="onManualUnitChange('unidad')">
               Unidad
             </button>
             <button type="button" class="rounded-md px-3 py-2 text-sm font-medium transition cursor-pointer"
-              [class]="manualUnit() === 'kg' ? 'bg-white text-black shadow' : 'text-gray-500 hover:text-black'"
+              [class]="manualUnit() === 'kg' ? 'bg-(--card) text-black shadow' : 'text-gray-500 hover:text-black'"
               (click)="onManualUnitChange('kg')">
               Kilo
             </button>
@@ -336,7 +350,7 @@
         <h3 class="text-sm font-semibold text-black">
           Productos a pedir ({{ cart().length }})
         </h3>
-        <span class="text-sm font-semibold text-(--primary)">Total: ${{ cartTotal() }}</span>
+        <span class="text-sm font-semibold text-(--primary-bright)">Total: ${{ cartTotal() }}</span>
       </div>
 
       @if (cart().length > 0) {
@@ -387,6 +401,25 @@
 </app-modal>
 }
 
+@if (cancelTarget(); as order) {
+<app-confirm-modal title="Cancelar programación"
+  [message]="'¿Estás seguro de cancelar la programación de ' + order.company + '? Dejará de repetirse.'"
+  confirmText="Cancelar programación" cancelText="Volver" [danger]="true" (confirm)="cancelScheduled()"
+  (cancel)="cancelCancel()" />
+}
+
+@if (finalizeTarget(); as order) {
+<app-confirm-modal title="Marcar como finalizado"
+  [message]="'¿Estás seguro de marcar como finalizado el pedido de ' + order.company + '?'" confirmText="Finalizar"
+  cancelText="Volver" (confirm)="markAsFinalized()" (cancel)="cancelFinalize()" />
+}
+
+@if (deliveryTarget(); as order) {
+<app-confirm-modal title="Registrar entrega"
+  [message]="'¿Registrar la entrega de ' + order.company + '? La próxima entrega se programará automáticamente.'"
+  confirmText="Registrar entrega" cancelText="Volver" (confirm)="confirmDelivery()" (cancel)="cancelDelivery()" />
+}
+
 @if (receivedOrder(); as order) {
 <app-modal title="Registrar lo recibido" size="lg" (close)="closeReceived()">
   <div class="space-y-4">
@@ -416,8 +449,9 @@
             <td class="px-4 py-3 text-gray-700">{{ item.name }}</td>
             <td class="px-4 py-3 text-gray-700">{{ item.quantity }} {{ unitSuffix(item.unit) }}</td>
             <td class="px-4 py-3">
-              <input type="number" min="0" step="0.01" [value]="item.received" (input)="onReceivedChange($index, $event)"
-                class="w-24 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 outline-none transition focus:border-(--primary)" />
+              <input type="number" min="0" step="0.01" [value]="item.received"
+                (input)="onReceivedChange($index, $event)"
+                class="w-24 rounded-lg border border-gray-300 bg-(--card) px-3 py-1.5 text-sm text-gray-900 outline-none transition focus:border-(--primary)" />
             </td>
           </tr>
           }
@@ -427,8 +461,13 @@
 
     <div class="flex justify-end gap-3 border-t border-gray-200 pt-4">
       <app-button variant="outline" text="Cancelar" (clicked)="closeReceived()" />
-      <app-button text="Guardar" (clicked)="saveReceived()" />
+      <app-button text="Guardar" (clicked)="askSaveReceived()" />
     </div>
   </div>
 </app-modal>
+}
+
+@if (receivedSaveConfirm()) {
+<app-confirm-modal title="Guardar lo recibido" message="¿Guardar las cantidades recibidas? Se actualizará el pedido."
+  confirmText="Guardar" cancelText="Volver" (confirm)="confirmSaveReceived()" (cancel)="cancelSaveReceived()" />
 }

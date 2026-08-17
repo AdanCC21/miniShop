@@ -25,6 +25,18 @@ describe('recurrence', () => {
     it('clamps the day to the last day of February on leap years', () => {
       expect(nextOccurrence('2028-01-31', 'mensual')).toBe('2028-02-29');
     });
+
+    it('advances to the next selected weekday for dias_semana', () => {
+      expect(nextOccurrence('2026-08-14', 'dias_semana', [1, 3, 4, 5])).toBe('2026-08-17');
+    });
+
+    it('skips unselected weekdays for dias_semana', () => {
+      expect(nextOccurrence('2026-08-17', 'dias_semana', [3])).toBe('2026-08-19');
+    });
+
+    it('falls back to one day when no days selected for dias_semana', () => {
+      expect(nextOccurrence('2026-08-14', 'dias_semana', [])).toBe('2026-08-15');
+    });
   });
 
   describe('weekdayName', () => {
@@ -50,6 +62,11 @@ describe('recurrence', () => {
       expect(recurrenceLabel('semanal', '2026-08-18')).toBe('Cada Martes');
       expect(recurrenceLabel('quincenal', '2026-08-14')).toBe('Cada 2 semanas');
       expect(recurrenceLabel('mensual', '2026-08-14')).toBe('Cada 14 de cada mes');
+      expect(recurrenceLabel('dias_semana', '2026-08-14', [1, 3, 4, 5])).toBe(
+        'Cada Lunes, Miércoles, Jueves y Viernes'
+      );
+      expect(recurrenceLabel('dias_semana', '2026-08-14', [3])).toBe('Cada Miércoles');
+      expect(recurrenceLabel('dias_semana', '2026-08-14', [])).toBe('Varios días a la semana');
     });
   });
 });

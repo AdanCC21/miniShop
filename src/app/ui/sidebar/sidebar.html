@@ -1,6 +1,6 @@
 @if (open()) {
   <div
-    class="fixed inset-0 z-20 bg-black/50 md:hidden"
+    class="fixed inset-0 z-20 bg-(--backdrop) md:hidden"
     animate.enter="ms-modal-backdrop"
     animate.leave="ms-fade-out"
     (click)="close.emit()"
@@ -8,7 +8,7 @@
 }
 
 <aside
-  class="fixed inset-y-0 left-0 z-30 flex w-44 transform flex-col overflow-y-auto border-r border-gray-200 bg-white py-4 transition-transform duration-300 md:w-(--sidebar-width) md:translate-x-0"
+  class="fixed inset-y-0 left-0 z-30 flex w-44 transform flex-col overflow-y-auto border-r border-gray-200 bg-(--card) py-4 transition-transform duration-300 md:w-(--sidebar-width) md:translate-x-0"
   [class.-translate-x-full]="!open()"
 >
   <div

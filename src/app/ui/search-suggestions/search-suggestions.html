@@ -8,13 +8,13 @@
     [placeholder]="placeholder()"
     (input)="onInput($event)"
     (focus)="onFocus()"
-    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-(--primary)"
+    class="w-full rounded-lg border border-gray-300 bg-(--card) px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-(--primary)"
     [class]="open() && items().length > 0 ? 'rounded-b-none' : 'rounded-lg'"
   />
 
   @if (open() && query().trim() && items().length > 0) {
     <ul
-      class="absolute left-0 right-0 top-full z-50 max-h-48 overflow-y-auto rounded-b-lg border border-gray-200 bg-white shadow-lg"
+      class="absolute left-0 right-0 top-full z-50 max-h-48 overflow-y-auto rounded-b-lg border border-gray-200 bg-(--card) shadow-lg"
     >
       @for (item of items(); track $index) {
         <li>
@@ -35,7 +35,7 @@
 
   @if (open() && query().trim() && items().length === 0 && emptyMessage()) {
     <div
-      class="absolute left-0 right-0 top-full z-50 rounded-b-lg border border-gray-200 bg-white px-3 py-2 shadow-lg"
+      class="absolute left-0 right-0 top-full z-50 rounded-b-lg border border-gray-200 bg-(--card) px-3 py-2 shadow-lg"
     >
       <p class="text-sm text-gray-500">{{ emptyMessage() }}</p>
     </div>

@@ -1,11 +1,11 @@
 @if (!isBarePage()) {
-  <div class="flex min-h-screen bg-white" [style.--sidebar-width]="sidebarWidth() + 'vw'">
+  <div class="flex min-h-screen bg-(--surface)" [style.--sidebar-width]="sidebarWidth() + 'vw'">
     <app-sidebar [open]="sidebarOpen()" (close)="closeSidebar()" (widthChange)="onSidebarWidthChange($event)" />
 
     <div class="flex min-h-screen flex-1 flex-col md:pl-[var(--sidebar-width)]">
       <app-header (menuClick)="openSidebar()" />
 
-      <main class="flex-1 bg-white p-4 sm:p-6">
+      <main class="flex-1 bg-(--surface) p-4 sm:p-6">
         <router-outlet />
       </main>
     </div>

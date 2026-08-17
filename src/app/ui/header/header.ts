@@ -1,8 +1,10 @@
 import { Component, OnInit, output, signal } from '@angular/core';
 
+import { ThemeToggleComponent } from '../theme-toggle/theme-toggle';
+
 @Component({
   selector: 'app-header',
-  imports: [],
+  imports: [ThemeToggleComponent],
   templateUrl: './header.html'
 })
 export class HeaderComponent implements OnInit {

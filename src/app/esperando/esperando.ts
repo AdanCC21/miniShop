@@ -3,10 +3,11 @@ import { Router } from '@angular/router';
 
 import { AuthService } from '../auth/auth.service';
 import { ButtonComponent } from '../ui/button/button';
+import { ThemeToggleComponent } from '../ui/theme-toggle/theme-toggle';
 
 @Component({
   selector: 'app-esperando',
-  imports: [ButtonComponent],
+  imports: [ButtonComponent, ThemeToggleComponent],
   templateUrl: './esperando.html'
 })
 export class EsperandoComponent {

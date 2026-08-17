@@ -6,7 +6,7 @@
 
   <div class="grid gap-6 lg:grid-cols-[3fr_1fr]">
     @if(this.regManual()){
-    <section class="rounded-lg border border-gray-200 bg-white p-5">
+    <section class="rounded-lg border border-gray-200 bg-(--card) p-5">
       <h2 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">Registrar producto</h2>
 
       <div class="space-y-4">
@@ -26,12 +26,12 @@
             <span class="text-xs font-normal text-gray-400">({{ byWeight() ? 'kg' : 'unidades' }})</span>
             <input id="quantity" type="number" min="0" [step]="byWeight() ? '0.01' : '1'" [value]="quantity()"
               (input)="onQuantityChange($event)"
-              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-(--primary)" />
+              class="mt-1 w-full rounded-lg border border-gray-300 bg-(--card) px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-(--primary)" />
           </label>
 
           <button type="button" (click)="toggleByWeight()"
             class="rounded-lg px-4 py-2 text-sm font-medium transition cursor-pointer"
-            [class]="byWeight() ? 'bg-(--primary) text-(--primary-foreground)' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-100'">
+            [class]="byWeight() ? 'bg-(--primary) text-(--primary-foreground)' : 'border border-gray-300 bg-(--card) text-gray-700 hover:bg-gray-100'">
             Aplica kg
           </button>
 
@@ -40,9 +40,9 @@
       </div>
     </section>
     }@else {
-    <section class="flex flex-col gap-4 border border-gray-200 bg-white p-5 rounded-lg">
+    <section class="flex flex-col gap-4 border border-gray-200 bg-(--card) p-5 rounded-lg">
       <h2 class="text-xl">Registrando productos</h2>
-      <input id="scan-prod" class="bg-white px-4 py-2 border border-gray-200 rounded-lg" placeholder="Codigo" />
+      <input id="scan-prod" class="bg-(--card) px-4 py-2 border border-gray-200 rounded-lg" placeholder="Codigo" />
       
       <div>
         <span class="text-lg">Producto :</span>
@@ -52,7 +52,7 @@
     </section>
     }
 
-    <aside class="flex flex-col justify-between rounded-lg border border-gray-200 bg-white p-5">
+    <aside class="flex flex-col justify-between rounded-lg border border-gray-200 bg-(--card) p-5">
       <div>
         <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-500">Venta actual</h2>
         <div class="mt-4 space-y-1">
@@ -63,7 +63,7 @@
 
       <div class="my-6">
         <p class="text-xs uppercase tracking-wider text-gray-400">Total acumulado</p>
-        <p class="mt-1 text-3xl font-bold text-(--primary)">${{ formatPrice(total()) }}</p>
+        <p class="mt-1 text-3xl font-bold text-(--primary-bright)">${{ formatPrice(total()) }}</p>
       </div>
 
       <div class="flex gap-2 w-full">
@@ -73,7 +73,7 @@
     </aside>
   </div>
 
-  <section class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+  <section class="overflow-x-auto rounded-lg border border-gray-200 bg-(--card)">
     <h2 class="border-b border-gray-200 px-4 py-3 text-sm font-semibold uppercase tracking-wider text-gray-500">
       Productos a cobrar
     </h2>
@@ -91,7 +91,7 @@
       <tbody>
         @for (line of cart(); track line.code) {
         <tr class="border-b border-gray-100 transition last:border-b-0 hover:bg-gray-50">
-          <td class="px-4 py-3 font-medium text-(--primary)">{{ line.code }}</td>
+          <td class="px-4 py-3 font-medium text-(--primary-bright)">{{ line.code }}</td>
           <td class="px-4 py-3 text-gray-700">{{ line.name }}</td>
           <td class="px-4 py-3 text-gray-900">${{ formatPrice(line.price) }}</td>
           <td class="px-4 py-3 text-gray-900">

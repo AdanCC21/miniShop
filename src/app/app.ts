@@ -1,9 +1,10 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 
 import { HeaderComponent } from './ui/header/header';
 import { SidebarComponent } from './ui/sidebar/sidebar';
+import { ThemeService } from './ui/theme-toggle/theme.service';
 import { ToastComponent } from './ui/toast/toast';
 
 @Component({
@@ -15,6 +16,8 @@ export class App {
   private readonly currentUrl = signal('');
   protected readonly sidebarOpen = signal(false);
   protected readonly sidebarWidth = signal(this.defaultSidebarWidth());
+
+  private readonly theme = inject(ThemeService);
 
   protected readonly isBarePage = computed(() => {
     const url = this.currentUrl();

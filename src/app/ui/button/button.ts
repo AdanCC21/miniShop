@@ -5,8 +5,8 @@ export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger';
 const variantClasses: Record<ButtonVariant, string> = {
   primary: 'bg-(--primary) text-[var(--primary-foreground)] hover:opacity-90',
   secondary: 'bg-(--secondary) text-[var(--secondary-foreground)] hover:opacity-90',
-  outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-100',
-  danger: 'bg-red-600 text-white hover:bg-red-700'
+  outline: 'border border-gray-300 bg-(--card) text-gray-700 hover:bg-gray-100',
+  danger: 'bg-(--danger) text-white hover:bg-(--danger-hover)'
 };
 
 const disabledClass = 'cursor-not-allowed bg-gray-200 text-gray-400';
