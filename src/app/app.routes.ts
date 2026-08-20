@@ -7,6 +7,7 @@ import { OrdersComponent } from './orders/orders';
 import { ProductsComponent } from './products/products';
 import { ProductDetailsComponent } from './products/product-details/product-details';
 import { CajeroComponent } from './cajero/cajero';
+import { FiadosComponent } from './fiados/fiados';
 import { TienditaComponent } from './tiendita/tiendita';
 import { EmpleadosComponent } from './empleados/empleados';
 import { AdminComponent } from './admin/admin';
@@ -39,6 +40,11 @@ export const routes: Routes = [
   {
     path: 'cajero',
     component: CajeroComponent,
+    canActivate: [storeMemberGuard]
+  },
+  {
+    path: 'fiados',
+    component: FiadosComponent,
     canActivate: [storeMemberGuard]
   },
   {

@@ -10,9 +10,11 @@ Angular 22 + Tailwind CSS v4 miniShop app: "tiendita/abarrotes" admin UI (produc
 
 ## Architecture
 - Standalone components only, no NgModules. Each component is a folder with `x.ts` + `x.html` (`templateUrl`, never inline templates). State via `input()` / `output()` / `signal()` / `computed()`.
-- Reusable UI lives in `src/app/ui/<name>/` and is imported per-component (Button, Input, Select, Modal, ConfirmModal, Toast, SearchSuggestions, AuthTabs). Feature pages live under `src/app/<feature>/`.
+- Reusable UI lives in `src/app/ui/<name>/` and is imported per-component (Button, Input, Select, Modal, ConfirmModal, Toast, SearchSuggestions, AuthTabs, Header, Sidebar, ThemeToggle). Feature pages live under `src/app/<feature>/`.
 - `app.html` renders sidebar/header only when NOT on `/auth` or `/esperando` (`isBarePage` in `app.ts`). `<app-toast />` sits at the app root so `ToastService` (success/info/error/warning) works on every page.
 - `app-search-suggestions` is generic (`SearchSuggestionsComponent<T>`): pass `items`, an `itemTemplate` (`<ng-template #tpl let-item>` with `$implicit` context), bind `queryChange`/`selected`. Dropdown closes on outside click / Escape / selection — it owns that logic.
+- `StoreService` (`src/app/store.service.ts`) is the shared in-memory store: `orders` and `openDays` signals. Both `orders/orders.ts` and `tiendita/tiendita.ts` inject it — order mutations happen there, not in the component.
+- The login/register page is `src/app/auth-page/` (routed at `/auth`); `src/app/auth/` holds only `AuthService` + guards.
 - Modal content area is `overflow-y-auto`; absolutely-positioned dropdowns inside a modal scroll/clip with it.
 - Animations: keyframes/classes are `ms-*` in `src/styles.css`. The `animate.enter="ms-*"` attributes used across templates are inert (no directive registered) — to actually animate, add the `.ms-*` class directly (as `toast.html` does).
 
@@ -30,4 +32,4 @@ Angular 22 + Tailwind CSS v4 miniShop app: "tiendita/abarrotes" admin UI (produc
 
 ## Testing
 - Specs use Vitest globals (no `import` for `describe/it/expect`), `TestBed`, and real routes (`provideRouter(routes)`); tests that touch auth clear `localStorage` in `beforeEach`.
-- Currently 48 tests across 5 specs: `auth.service.spec.ts`, `guards.spec.ts`, `app.spec.ts`, `ui/toast/toast.service.spec.ts`, `orders/recurrence.spec.ts`.
+- Currently 51 tests across 5 specs (count drifts; don't rely on it): `auth.service.spec.ts`, `guards.spec.ts`, `app.spec.ts`, `ui/toast/toast.service.spec.ts`, `orders/recurrence.spec.ts`.
